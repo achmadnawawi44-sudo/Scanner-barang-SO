@@ -39,7 +39,10 @@
   <input type="text" id="barcodeInput" placeholder="Scan barcode..." />
   <button onclick="startScanner()">📷 Scan Kamera</button>
   <div id="reader"></div>
-
+  <div id="reader" style="width: 300px; height: 200px;"></div>
+  
+  <button id="flashBtn" style="display:none;">🔦 Nyalakan Flash</button>
+  
   <label>Nama Barang:</label>
   <input type="text" id="namaBarangInput" disabled />
   <label>Qty:</label>
@@ -67,6 +70,50 @@
   <button onclick="hapusSemuaData()" style="margin-left: 10px; background-color: red; color: white;">Hapus Semua Data</button>
 
   <script>
+    let flashOn = false; // status flash
+let scanner;         // scanner instance
+
+function startScanner() {
+  const readerDiv = document.getElementById("reader");
+  readerDiv.style.display = "block";
+  document.getElementById("flashBtn").style.display = "inline-block"; // tampilkan tombol flash
+
+  scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 150 } },
+    (decodedText) => {
+      document.getElementById("barcodeInput").value = decodedText;
+      const nama = dataBarang[decodedText];
+      document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
+      stopScanner();
+    },
+    (errorMsg) => {}
+  ).catch((err) => {
+    alert("Gagal membuka kamera: " + err);
+  });
+}
+
+// 🔦 Fungsi toggle flash
+document.getElementById("flashBtn").addEventListener("click", () => {
+  flashOn = !flashOn;
+  scanner.applyVideoConstraints({
+    advanced: [{ torch: flashOn }]
+  }).then(() => {
+    document.getElementById("flashBtn").innerText = flashOn ? "💡 Matikan Flash" : "🔦 Nyalakan Flash";
+  }).catch(err => {
+    alert("Flash tidak didukung di perangkat ini");
+  });
+});
+
+function stopScanner() {
+  scanner.stop().then(() => {
+    document.getElementById("reader").innerHTML = "";
+    document.getElementById("reader").style.display = "none";
+    document.getElementById("flashBtn").style.display = "none";
+  });
+}
+
     let dataBarang = {};
     let dataScan = JSON.parse(localStorage.getItem("dataScan")) || [];
     let lokasiTerkunci = false;
@@ -265,4 +312,5 @@
   </script>
 </body>
 </html>
+
 
