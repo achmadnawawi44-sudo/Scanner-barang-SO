@@ -229,29 +229,30 @@
     }
 
     function startScanner() {
-      const readerDiv = document.getElementById("reader");
-      readerDiv.style.display = "block";
+  const readerDiv = document.getElementById("reader");
+  readerDiv.style.display = "block";
 
-      scanner = new Html5Qrcode("reader");
-      scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
-        (decodedText) => {
-          document.getElementById("barcodeInput").value = decodedText;
-          const nama = dataBarang[decodedText];
-          document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
-          scanner.stop().then(() => {
-            readerDiv.innerHTML = "";
-            readerDiv.style.display = "none";
-          });
-        },
-        (errorMsg) => {
-          // console.log("Scanning...", errorMsg);
-        }
-      ).catch((err) => {
-        alert("Gagal membuka kamera: " + err);
+  scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, // Kamera HD
+    { fps: 10, qrbox: { width: 350, height: 200 } }, // Kotak scan besar
+    (decodedText) => {
+      document.getElementById("barcodeInput").value = decodedText;
+      const nama = dataBarang[decodedText];
+      document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
+      scanner.stop().then(() => {
+        readerDiv.innerHTML = "";
+        readerDiv.style.display = "none";
       });
+    },
+    (errorMsg) => {
+      // console.log("Scanning...", errorMsg);
     }
+  ).catch((err) => {
+    alert("Gagal membuka kamera: " + err);
+  });
+}
+
 
     function hapusSemuaData() {
       if (confirm("Yakin ingin menghapus semua data?")) {
@@ -265,3 +266,4 @@
   </script>
 </body>
 </html>
+
