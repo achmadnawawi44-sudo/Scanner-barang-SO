@@ -233,25 +233,37 @@
   readerDiv.style.display = "block";
 
   scanner = new Html5Qrcode("reader");
-  scanner.start(
-    { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, // Kamera HD
-    { fps: 10, qrbox: { width: 350, height: 200 } }, // Kotak scan besar
-    (decodedText) => {
-      document.getElementById("barcodeInput").value = decodedText;
-      const nama = dataBarang[decodedText];
-      document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
-      scanner.stop().then(() => {
-        readerDiv.innerHTML = "";
-        readerDiv.style.display = "none";
-      });
-    },
-    (errorMsg) => {
-      // console.log("Scanning...", errorMsg);
+
+  // Mencoba mendapatkan kamera dengan autofocus
+  navigator.mediaDevices.getUserMedia({
+    video: {
+      facingMode: "environment",
+      focusMode: "continuous", // auto fokus terus-menerus
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
     }
-  ).catch((err) => {
+  }).then((stream) => {
+    scanner.start(
+      { facingMode: "environment" },
+      { fps: 15, qrbox: { width: 250, height: 150 } },
+      (decodedText) => {
+        document.getElementById("barcodeInput").value = decodedText;
+        const nama = dataBarang[decodedText];
+        document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
+        scanner.stop().then(() => {
+          readerDiv.innerHTML = "";
+          readerDiv.style.display = "none";
+        });
+      },
+      (errorMsg) => {
+        // console.log("Scanning...", errorMsg);
+      }
+    );
+  }).catch((err) => {
     alert("Gagal membuka kamera: " + err);
   });
 }
+
 
 
     function hapusSemuaData() {
@@ -266,4 +278,5 @@
   </script>
 </body>
 </html>
+
 
