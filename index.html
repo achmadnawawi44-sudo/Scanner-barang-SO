@@ -18,7 +18,7 @@
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/refs/heads/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
-  <h2>Scanner Stok Opname</h2>
+  <h2>Scanner Stok Opname Goto Living</h2>
 
   <label>Nama Lokasi:</label>
   <input type="text" id="lokasiInput" placeholder="Contoh: Gudang A" />
@@ -229,42 +229,29 @@
     }
 
     function startScanner() {
-  const readerDiv = document.getElementById("reader");
-  readerDiv.style.display = "block";
+      const readerDiv = document.getElementById("reader");
+      readerDiv.style.display = "block";
 
-  scanner = new Html5Qrcode("reader");
-
-  // Mencoba mendapatkan kamera dengan autofocus
-  navigator.mediaDevices.getUserMedia({
-    video: {
-      facingMode: "environment",
-      focusMode: "continuous", // auto fokus terus-menerus
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
+      scanner = new Html5Qrcode("reader");
+      scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 150 } },
+        (decodedText) => {
+          document.getElementById("barcodeInput").value = decodedText;
+          const nama = dataBarang[decodedText];
+          document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
+          scanner.stop().then(() => {
+            readerDiv.innerHTML = "";
+            readerDiv.style.display = "none";
+          });
+        },
+        (errorMsg) => {
+          // console.log("Scanning...", errorMsg);
+        }
+      ).catch((err) => {
+        alert("Gagal membuka kamera: " + err);
+      });
     }
-  }).then((stream) => {
-    scanner.start(
-      { facingMode: "environment" },
-      { fps: 15, qrbox: { width: 250, height: 150 } },
-      (decodedText) => {
-        document.getElementById("barcodeInput").value = decodedText;
-        const nama = dataBarang[decodedText];
-        document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
-        scanner.stop().then(() => {
-          readerDiv.innerHTML = "";
-          readerDiv.style.display = "none";
-        });
-      },
-      (errorMsg) => {
-        // console.log("Scanning...", errorMsg);
-      }
-    );
-  }).catch((err) => {
-    alert("Gagal membuka kamera: " + err);
-  });
-}
-
-
 
     function hapusSemuaData() {
       if (confirm("Yakin ingin menghapus semua data?")) {
@@ -278,5 +265,3 @@
   </script>
 </body>
 </html>
-
-
