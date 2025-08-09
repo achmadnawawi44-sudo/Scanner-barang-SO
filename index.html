@@ -17,8 +17,7 @@
   </style>
 </head>
 <body>
-  <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/refs/heads/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
-  <h2>Scanner Stok Opname Goto Living</h2>
+  <h2>Scanner Stok Barang</h2>
 
   <label>Nama Lokasi:</label>
   <input type="text" id="lokasiInput" placeholder="Contoh: Gudang A" />
@@ -63,22 +62,13 @@
   </table>
 
   <br>
-  <button onclick="exportData()">Export File</button>
-  <button onclick="hapusSemuaData()" style="margin-left: 10px; background-color: red; color: white;">Hapus Semua Data</button>
+  <button onclick="exportData()">Simpan</button>
 
   <script>
     let dataBarang = {};
-    let dataScan = JSON.parse(localStorage.getItem("dataScan")) || [];
+    let dataScan = [];
     let lokasiTerkunci = false;
     let scanner;
-
-    function saveDataToLocalStorage() {
-      localStorage.setItem("dataScan", JSON.stringify(dataScan));
-    }
-
-    function loadDataFromLocalStorage() {
-      updateTable();
-    }
 
     function lockLokasi() {
       const lokasi = document.getElementById("lokasiInput");
@@ -158,7 +148,7 @@
       const nama = document.getElementById("namaBarangInput").value;
       const qty = parseInt(document.getElementById("qtyInput").value);
 
-      if (!barcode || isNaN(qty)) {
+      if (!barcode || !qty) {
         alert("Isi barcode dan qty.");
         return;
       }
@@ -170,7 +160,6 @@
         dataScan.push({ lokasi, barcode, nama, qty });
       }
 
-      saveDataToLocalStorage();
       document.getElementById("barcodeInput").value = "";
       document.getElementById("namaBarangInput").value = "";
       document.getElementById("qtyInput").value = "";
@@ -189,30 +178,16 @@
         row.insertCell().innerText = item.qty;
 
         const aksiCell = row.insertCell();
-
         const editBtn = document.createElement("button");
         editBtn.textContent = "Edit Qty";
         editBtn.onclick = () => {
           const newQty = prompt("Masukkan Qty baru:", item.qty);
           if (newQty !== null && !isNaN(newQty)) {
             item.qty = parseInt(newQty);
-            saveDataToLocalStorage();
             updateTable();
           }
         };
         aksiCell.appendChild(editBtn);
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "Hapus";
-        delBtn.style.marginLeft = "5px";
-        delBtn.onclick = () => {
-          if (confirm("Yakin ingin menghapus baris ini?")) {
-            dataScan.splice(index, 1);
-            saveDataToLocalStorage();
-            updateTable();
-          }
-        };
-        aksiCell.appendChild(delBtn);
       });
     }
 
@@ -252,16 +227,6 @@
         alert("Gagal membuka kamera: " + err);
       });
     }
-
-    function hapusSemuaData() {
-      if (confirm("Yakin ingin menghapus semua data?")) {
-        dataScan = [];
-        saveDataToLocalStorage();
-        updateTable();
-      }
-    }
-
-    window.onload = loadDataFromLocalStorage;
   </script>
 </body>
 </html>
