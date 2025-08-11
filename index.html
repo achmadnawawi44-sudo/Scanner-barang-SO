@@ -64,8 +64,15 @@
 
   <br>
   <button onclick="exportData()">Export File</button>
-<button onclick="hapusSemuaData()" style="margin-left: 10px; background-color: red; color: white;">Hapus Semua Data</button>
-
+  <button onclick="simpanKeSpreadsheet()" style="margin-left: 10px; background-color: green; color: white;">
+    Simpan ke Spreadsheet
+  </button>
+  <a href="https://docs.google.com/spreadsheets/d/1UY5XeN2Vq8GLYNSmnS5Lba9QU1T7jHuUhKM1W9yLg9g/edit" target="_blank" style="margin-left: 10px;">
+    📄 Lihat Spreadsheet
+  </a>
+  <button onclick="hapusSemuaData()" style="margin-left: 10px; background-color: red; color: white;">
+    Hapus Semua Data
+  </button>
 
   <script>
     let dataBarang = {};
@@ -229,6 +236,31 @@
       XLSX.writeFile(wb, "stok_barang.xlsx");
     }
 
+    function simpanKeSpreadsheet() {
+      if (dataScan.length === 0) {
+        alert("Tidak ada data untuk disimpan.");
+        return;
+      }
+
+      // Ganti URL di bawah dengan URL Web App Google Apps Script kamu
+      const scriptURL = "https://script.google.com/macros/s/AKfycbw0Pdh5rnRsIyXkwFwrnqH0IWAQbe9fNfClx055m46OIQZdNEBVeoEpDwfyTD_sqdla/exec";
+
+      fetch(scriptURL, {
+        method: "POST",
+        body: JSON.stringify(dataScan),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(res => res.text())
+      .then(response => {
+        alert("✅ Data berhasil disimpan ke Spreadsheet!");
+      })
+      .catch(err => {
+        alert("❌ Gagal menyimpan: " + err);
+      });
+    }
+
     function startScanner() {
       const readerDiv = document.getElementById("reader");
       readerDiv.style.display = "block";
@@ -262,8 +294,9 @@
       }
     }
 
-
     window.onload = loadDataFromLocalStorage;
   </script>
 </body>
 </html>
+
+
