@@ -14,6 +14,8 @@
     th { background-color: #eee; }
     .lokasi-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
     #reader { width: 100%; max-width: 400px; margin: 10px 0; display: none; }
+    .button-group { display: flex; gap: 10px; margin-top: 10px; }
+    .button-group button { flex: 1; }
   </style>
 </head>
 <body>
@@ -22,7 +24,7 @@
 
   <label>Nama Lokasi:</label>
   <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
-<div class="lokasi-buttons">
+  <div class="lokasi-buttons">
     <button onclick="lockLokasi()">🔒Kunci Lokasi</button>
     <button onclick="ubahLokasi()">🔓Ubah Lokasi</button>
   </div>
@@ -62,16 +64,24 @@
     <tbody></tbody>
   </table>
 
-  <br>
-  <button onclick="exportData()">Export File</button>
-<button onclick="hapusSemuaData()" style="margin-left: 10px; background-color: red; color: white;">Hapus Semua Data</button>
-
+  <div class="button-group">
+    <button onclick="exportData()">Export File</button>
+    <button onclick="saveToGoogleSheet()" style="background-color: #34a853; color: white;">Simpan ke Google Sheet</button>
+    <button onclick="hapusSemuaData()" style="background-color: red; color: white;">Hapus Semua Data</button>
+  </div>
 
   <script>
     let dataBarang = {};
     let dataScan = JSON.parse(localStorage.getItem("dataScan")) || [];
     let lokasiTerkunci = false;
     let scanner;
+
+    // Ganti dengan ID Spreadsheet Anda dan nama sheet
+    const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
+    const SHEET_NAME = 'Sheet1';
+    
+    // Ganti dengan URL Apps Script deployment Anda
+    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFmDvPnIsINlbzt24bCUmGT7K9hOxJDaLuJ-1PLvTQteIYJ_y9M35p6z7u2tgA5-a4Rw/exec';
 
     function saveDataToLocalStorage() {
       localStorage.setItem("dataScan", JSON.stringify(dataScan));
@@ -229,6 +239,59 @@
       XLSX.writeFile(wb, "stok_barang.xlsx");
     }
 
+    function saveToGoogleSheet() {
+      if (dataScan.length === 0) {
+        alert("Tidak ada data untuk disimpan.");
+        return;
+      }
+
+      if (!APP_SCRIPT_URL || APP_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyFmDvPnIsINlbzt24bCUmGT7K9hOxJDaLuJ-1PLvTQteIYJ_y9M35p6z7u2tgA5-a4Rw/exec') {
+        alert("Silakan konfigurasi URL Apps Script terlebih dahulu.");
+        return;
+      }
+
+      const lokasi = document.getElementById("lokasiInput").value;
+      if (!lokasiTerkunci || !lokasi) {
+        alert("Kunci lokasi terlebih dahulu dan pastikan lokasi sudah diisi.");
+        return;
+      }
+
+      // Tambahkan timestamp ke data
+      const dataWithTimestamp = dataScan.map(item => ({
+        ...item,
+        timestamp: new Date().toISOString()
+      }));
+
+      // Kirim data ke Google Apps Script
+      fetch(APP_SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          spreadsheetId: SPREADSHEET_ID,
+          sheetName: SHEET_NAME,
+          data: dataWithTimestamp
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Data berhasil disimpan ke Google Spreadsheet!");
+          // Opsional: kosongkan data setelah berhasil disimpan
+          // dataScan = [];
+          // saveDataToLocalStorage();
+          // updateTable();
+        } else {
+          alert("Gagal menyimpan data: " + (data.message || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Terjadi kesalahan saat menyimpan data.");
+      });
+    }
+
     function startScanner() {
       const readerDiv = document.getElementById("reader");
       readerDiv.style.display = "block";
@@ -262,9 +325,7 @@
       }
     }
 
-
     window.onload = loadDataFromLocalStorage;
   </script>
 </body>
 </html>
-
