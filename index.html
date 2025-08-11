@@ -236,23 +236,43 @@
       XLSX.writeFile(wb, "stok_barang.xlsx");
     }
 
+    function simpanKeSpreadsheet() {
+      if (dataScan.length === 0) {
+        alert("Tidak ada data untuk disimpan.");
+        return;
+      }
 
-      function simpanKeSpreadsheet() {
-  fetch("https://script.google.com/macros/s/AKfycbw0Pdh5rnRsIyXkwFwrnqH0IWAQbe9fNfClx055m46OIQZdNEBVeoEpDwfyTD_sqdla/exec", {
-    method: "POST",
-    body: JSON.stringify({
-      col1: "Data 1",
-      col2: "Data 2",
-      col3: "Data 3"
-    }),
-    headers: { "Content-Type": "application/json" }
-  })
-  .then(res => res.text())
-  .then(txt => alert(txt))
-  .catch(err => alert("Error: " + err));
-}
+      const originalText = document.querySelector('button[onclick="simpanKeSpreadsheet()"]').textContent;
+      const button = document.querySelector('button[onclick="simpanKeSpreadsheet()"]');
+      button.textContent = "Menyimpan...";
+      button.disabled = true;
 
+      // Format data untuk dikirim ke Google Apps Script
+      const dataToSend = {
+        data: dataScan,
+        timestamp: new Date().toISOString()
+      };
 
+      fetch("https://script.google.com/macros/s/AKfycbw0Pdh5rnRsIyXkwFwrnqH0IWAQbe9fNfClx055m46OIQZdNEBVeoEpDwfyTD_sqdla/exec", {
+        method: "POST",
+        mode: 'no-cors',
+        body: JSON.stringify(dataToSend),
+        headers: { 
+          "Content-Type": "application/json"
+        }
+      })
+      .then(() => {
+        button.textContent = originalText;
+        button.disabled = false;
+        window.open("https://docs.google.com/spreadsheets/d/1UY5XeN2Vq8GLYNSmnS5Lba9QU1T7jHuUhKM1W9yLg9g/edit", "_blank");
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        button.textContent = originalText;
+        button.disabled = false;
+        alert("Gagal menyimpan ke spreadsheet. Silakan coba lagi.");
+      });
+    }
 
     function startScanner() {
       const readerDiv = document.getElementById("reader");
@@ -291,8 +311,6 @@
   </script>
 </body>
 </html>
-
-
 
 
 
