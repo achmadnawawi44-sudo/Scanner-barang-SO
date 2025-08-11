@@ -240,23 +240,43 @@
     }
 
     function simpanKeSpreadsheet() {
-      if (dataScan.length === 0) {
-        alert("Tidak ada data untuk disimpan.");
-        return;
-      }
+  // ... kode sebelumnya ...
 
-      const button = document.querySelector('button[onclick="simpanKeSpreadsheet()"]');
-      const loadingDiv = document.getElementById("loading");
-      
-      button.disabled = true;
-      loadingDiv.style.display = "block";
+  const payload = {
+    action: "saveStockData",
+    data: dataScan,
+    timestamp: new Date().toISOString()
+  };
 
-      // Format data untuk dikirim ke Google Apps Script
-      const payload = {
-        action: "saveStockData",
-        data: dataScan,
-        timestamp: new Date().toISOString()
-      };
+  // Encode payload sebagai query parameter
+  const params = new URLSearchParams();
+  params.append('action', payload.action);
+  params.append('data', JSON.stringify(payload.data));
+  params.append('timestamp', payload.timestamp);
+
+  const scriptUrl = "https://script.google.com/macros/s/SCRIPT_ID/exec";
+  const fullUrl = `${scriptUrl}?${params.toString()}`;
+
+  fetch(fullUrl, {
+    method: "GET",
+    redirect: "follow"
+  })
+  .then(response => response.json())
+  .then(result => {
+    console.log("Response:", result);
+    if (result.status === "success") {
+      alert(result.message);
+      window.open(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`, "_blank");
+    } else {
+      throw new Error(result.message);
+    }
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    alert(`Gagal menyimpan: ${error.message}`);
+  });
+}
+
 
       // Menggunakan Google Apps Script URL dengan eksekusi sebagai 'me'
       const scriptUrl = "https://script.google.com/macros/s/AKfycbzjuHR8JseV93fesi5RYPavPxBQar_tdebLlRD2wgwd2-bPX3qK7fQrUg2KpXNH3AnG4w/exec";
@@ -330,5 +350,6 @@
   </script>
 </body>
 </html>
+
 
 
