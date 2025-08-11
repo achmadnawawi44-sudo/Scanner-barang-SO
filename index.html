@@ -21,15 +21,15 @@
   <h2>Scanner Stok Opname Goto Living</h2>
 
   <label>Nama Lokasi:</label>
-  <input type="text" id="lokasiInput" placeholder="Contoh: Gudang A" />
-  <div class="lokasi-buttons">
-    <button onclick="lockLokasi()">Kunci Lokasi</button>
-    <button onclick="ubahLokasi()">Ubah Lokasi</button>
+  <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
+<div class="lokasi-buttons">
+    <button onclick="lockLokasi()">🔒Kunci Lokasi</button>
+    <button onclick="ubahLokasi()">🔓Ubah Lokasi</button>
   </div>
 
   <hr>
 
-  <label>Upload File Data Barang (CSV/XLSX):</label>
+  <label>📤Upload File Data Barang (CSV/XLSX):</label>
   <input type="file" id="uploadFile" accept=".csv, .xlsx" />
   <button onclick="handleFileUpload()">Upload</button>
 
@@ -63,8 +63,7 @@
   </table>
 
   <br>
- <button onclick="exportData()">Export File</button>
-<button onclick="simpanKeSpreadsheet()" style="background-color: green; color: white; margin-left: 10px;">Simpan ke Spreadsheet</button>
+  <button onclick="exportData()">Export File</button>
 <button onclick="hapusSemuaData()" style="margin-left: 10px; background-color: red; color: white;">Hapus Semua Data</button>
 
 
@@ -254,47 +253,43 @@
         alert("Gagal membuka kamera: " + err);
       });
     }
+<!-- Tombol Simpan -->
+<button onclick="simpanData()">💾 Simpan ke Spreadsheet</button>
 
-    function hapusSemuaData() {
-      if (confirm("Yakin ingin menghapus semua data?")) {
-        dataScan = [];
-        saveDataToLocalStorage();
-        updateTable();
-      }
+<!-- Tombol Link ke Spreadsheet -->
+<a id="linkSpreadsheet" href="https://docs.google.com/spreadsheets/d/1Az1E92qZznsafsImQXoKZ9DBj7NRo01hkELthHaaIZw/edit?gid=0#gid=0" target="_blank">
+    📄 Lihat Spreadsheet
+</a>
 
-      <script>
-function simpanKeSpreadsheet() {
-  if (dataScan.length === 0) {
-    alert("Tidak ada data untuk disimpan.");
-    return;
+<script>
+  function simpanData() {
+    // Di sini letakkan proses kirim data ke Spreadsheet
+    // Misal kirim ke Google Apps Script Web App
+    fetch('https://script.google.com/macros/s/AKfycby3XHKEt09QsSiXH9H-PAkVzg1V60NUvqErfXXBBgmlQbmxzroQJC1DDJ8LGEX7CB0m/exec', {
+      method: 'POST',
+      body: JSON.stringify(dataScan),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.text())
+    .then(response => {
+      alert("Data berhasil disimpan!");
+    })
+    .catch(err => {
+      alert("Gagal menyimpan: " + err);
+    });
   }
 
-  fetch("YOUR_WEB_APP_URL", { // Ganti dengan URL Web App GAS kamu
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dataScan)
-  })
-  .then(res => res.json())
-  .then(result => {
-    if (result.status === "success") {
-      alert("✅ " + result.message);
-    } else {
-      alert("❌ Gagal: " + result.message);
+  function hapusSemuaData() {
+    if (confirm("Yakin ingin menghapus semua data?")) {
+      dataScan = [];
+      saveDataToLocalStorage();
+      updateTable();
     }
-  })
-  .catch(err => {
-    alert("❌ Error: " + err);
-  });
-}
+  }
+</script>
+
+
     window.onload = loadDataFromLocalStorage;
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
