@@ -14,6 +14,7 @@
     th { background-color: #eee; }
     .lokasi-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
     #reader { width: 100%; max-width: 400px; margin: 10px 0; display: none; }
+    #loading { display: none; margin: 10px 0; }
   </style>
 </head>
 <body>
@@ -22,7 +23,7 @@
 
   <label>Nama Lokasi:</label>
   <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
-<div class="lokasi-buttons">
+  <div class="lokasi-buttons">
     <button onclick="lockLokasi()">🔒Kunci Lokasi</button>
     <button onclick="ubahLokasi()">🔓Ubah Lokasi</button>
   </div>
@@ -62,10 +63,12 @@
     <tbody></tbody>
   </table>
 
+  <div id="loading">Menyimpan data ke spreadsheet...</div>
+  
   <br>
   <button onclick="exportData()">Export File</button>
   <button onclick="simpanKeSpreadsheet()" style="margin-left: 10px; background-color: green; color: white;">
-  Simpan ke Spreadsheet
+    Simpan ke Spreadsheet
   </button>
   <a href="https://docs.google.com/spreadsheets/d/1UY5XeN2Vq8GLYNSmnS5Lba9QU1T7jHuUhKM1W9yLg9g/edit" target="_blank" style="margin-left: 10px;">
     📄 Lihat Spreadsheet
@@ -242,35 +245,51 @@
         return;
       }
 
-      const originalText = document.querySelector('button[onclick="simpanKeSpreadsheet()"]').textContent;
       const button = document.querySelector('button[onclick="simpanKeSpreadsheet()"]');
-      button.textContent = "Menyimpan...";
+      const loadingDiv = document.getElementById("loading");
+      
       button.disabled = true;
+      loadingDiv.style.display = "block";
 
       // Format data untuk dikirim ke Google Apps Script
-      const dataToSend = {
+      const payload = {
+        action: "saveStockData",
         data: dataScan,
         timestamp: new Date().toISOString()
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbw0Pdh5rnRsIyXkwFwrnqH0IWAQbe9fNfClx055m46OIQZdNEBVeoEpDwfyTD_sqdla/exec", {
-        method: "POST",
-        mode: 'no-cors',
-        body: JSON.stringify(dataToSend),
-        headers: { 
-          "Content-Type": "application/json"
+      // Menggunakan Google Apps Script URL dengan eksekusi sebagai 'me'
+      const scriptUrl = "https://script.google.com/macros/s/AKfycbzjuHR8JseV93fesi5RYPavPxBQar_tdebLlRD2wgwd2-bPX3qK7fQrUg2KpXNH3AnG4w/exec";
+      
+      // Menggunakan pendekatan dengan mengirim data sebagai parameter URL
+      const queryString = Object.keys(payload)
+        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(payload[key]))}`)
+        .join('&');
+      
+      const fullUrl = `${scriptUrl}?${queryString}`;
+
+      fetch(fullUrl, {
+        method: "GET",
+        redirect: "follow"
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
+        return response.text();
       })
-      .then(() => {
-        button.textContent = originalText;
-        button.disabled = false;
-        window.open("https://docs.google.com/spreadsheets/d/1UY5XeN2Vq8GLYNSmnS5Lba9QU1T7jHuUhKM1W9yLg9g/edit", "_blank");
+      .then(result => {
+        console.log("Success:", result);
+        alert("Data berhasil disimpan ke spreadsheet!");
+        window.open("1p-Bv3HLoAJgWWkrIECJmvPZCW71epsgnPhqajcfGVUw/edit", "_blank");
       })
-      .catch(err => {
-        console.error("Error:", err);
-        button.textContent = originalText;
+      .catch(error => {
+        console.error("Error:", error);
+        alert("Gagal menyimpan data: " + error.message);
+      })
+      .finally(() => {
         button.disabled = false;
-        alert("Gagal menyimpan ke spreadsheet. Silakan coba lagi.");
+        loadingDiv.style.display = "none";
       });
     }
 
@@ -311,8 +330,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
