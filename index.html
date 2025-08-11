@@ -14,7 +14,6 @@
     th { background-color: #eee; }
     .lokasi-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
     #reader { width: 100%; max-width: 400px; margin: 10px 0; display: none; }
-    #loading { display: none; margin: 10px 0; }
   </style>
 </head>
 <body>
@@ -23,7 +22,7 @@
 
   <label>Nama Lokasi:</label>
   <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
-  <div class="lokasi-buttons">
+<div class="lokasi-buttons">
     <button onclick="lockLokasi()">🔒Kunci Lokasi</button>
     <button onclick="ubahLokasi()">🔓Ubah Lokasi</button>
   </div>
@@ -63,19 +62,10 @@
     <tbody></tbody>
   </table>
 
-  <div id="loading">Menyimpan data ke spreadsheet...</div>
-  
   <br>
   <button onclick="exportData()">Export File</button>
-  <button onclick="simpanKeSpreadsheet()" style="margin-left: 10px; background-color: green; color: white;">
-    Simpan ke Spreadsheet
-  </button>
-  <a href="https://docs.google.com/spreadsheets/d/1p-Bv3HLoAJgWWkrIECJmvPZCW71epsgnPhqajcfGVUw/edit" target="_blank" style="margin-left: 10px;">
-    📄 Lihat Spreadsheet
-  </a>
-  <button onclick="hapusSemuaData()" style="margin-left: 10px; background-color: red; color: white;">
-    Hapus Semua Data
-  </button>
+<button onclick="hapusSemuaData()" style="margin-left: 10px; background-color: red; color: white;">Hapus Semua Data</button>
+
 
   <script>
     let dataBarang = {};
@@ -239,80 +229,6 @@
       XLSX.writeFile(wb, "stok_barang.xlsx");
     }
 
-    function simpanKeSpreadsheet() {
-  // ... kode sebelumnya ...
-
-  const payload = {
-    action: "saveStockData",
-    data: dataScan,
-    timestamp: new Date().toISOString()
-  };
-
-  // Encode payload sebagai query parameter
-  const params = new URLSearchParams();
-  params.append('action', payload.action);
-  params.append('data', JSON.stringify(payload.data));
-  params.append('timestamp', payload.timestamp);
-
-  const scriptUrl = "https://script.google.com/macros/s/SCRIPT_ID/exec";
-  const fullUrl = `${scriptUrl}?${params.toString()}`;
-
-  fetch(fullUrl, {
-    method: "GET",
-    redirect: "follow"
-  })
-  .then(response => response.json())
-  .then(result => {
-    console.log("Response:", result);
-    if (result.status === "success") {
-      alert(result.message);
-      window.open(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`, "_blank");
-    } else {
-      throw new Error(result.message);
-    }
-  })
-  .catch(error => {
-    console.error("Error:", error);
-    alert(`Gagal menyimpan: ${error.message}`);
-  });
-}
-
-
-      // Menggunakan Google Apps Script URL dengan eksekusi sebagai 'me'
-      const scriptUrl = "https://script.google.com/macros/s/AKfycbzjuHR8JseV93fesi5RYPavPxBQar_tdebLlRD2wgwd2-bPX3qK7fQrUg2KpXNH3AnG4w/exec";
-      
-      // Menggunakan pendekatan dengan mengirim data sebagai parameter URL
-      const queryString = Object.keys(payload)
-        .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(payload[key]))}`)
-        .join('&');
-      
-      const fullUrl = `${scriptUrl}?${queryString}`;
-
-      fetch(fullUrl, {
-        method: "GET",
-        redirect: "follow"
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.text();
-      })
-      .then(result => {
-        console.log("Success:", result);
-        alert("Data berhasil disimpan ke spreadsheet!");
-        window.open("https://docs.google.com/spreadsheets/d/1p-Bv3HLoAJgWWkrIECJmvPZCW71epsgnPhqajcfGVUw/edit", "_blank");
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        alert("Gagal menyimpan data: " + error.message);
-      })
-      .finally(() => {
-        button.disabled = false;
-        loadingDiv.style.display = "none";
-      });
-    }
-
     function startScanner() {
       const readerDiv = document.getElementById("reader");
       readerDiv.style.display = "block";
@@ -346,10 +262,9 @@
       }
     }
 
+
     window.onload = loadDataFromLocalStorage;
   </script>
 </body>
 </html>
-
-
 
