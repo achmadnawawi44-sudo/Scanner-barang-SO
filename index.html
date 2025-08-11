@@ -236,11 +236,6 @@
       XLSX.writeFile(wb, "stok_barang.xlsx");
     }
 
-    function simpanKeSpreadsheet() {
-      if (dataScan.length === 0) {
-        alert("Tidak ada data untuk disimpan.");
-        return;
-      }
 
       function simpanKeSpreadsheet() {
   fetch("https://script.google.com/macros/s/AKfycbw0Pdh5rnRsIyXkwFwrnqH0IWAQbe9fNfClx055m46OIQZdNEBVeoEpDwfyTD_sqdla/exec", {
@@ -296,6 +291,7 @@
   </script>
 </body>
 </html>
+
 
 
 
