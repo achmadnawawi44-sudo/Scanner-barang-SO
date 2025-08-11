@@ -254,41 +254,16 @@
       });
     }
 
-    <button onclick="simpanData()">💾 Simpan ke Spreadsheet</button>
-
-<!-- Tombol Link ke Spreadsheet -->
-<a id="linkSpreadsheet" href="https://docs.google.com/spreadsheets/d/1UY5XeN2Vq8GLYNSmnS5Lba9QU1T7jHuUhKM1W9yLg9g/edit?gid=0#gid=0" target="_blank">
-    📄 Lihat Spreadsheet
-</a>
-
-  function simpanData() {
-    // Di sini letakkan proses kirim data ke Spreadsheet
-    // Misal kirim ke Google Apps Script Web App
-    fetch('https://script.google.com/macros/s/AKfycbw0Pdh5rnRsIyXkwFwrnqH0IWAQbe9fNfClx055m46OIQZdNEBVeoEpDwfyTD_sqdla/exec', {
-      method: 'POST',
-      body: JSON.stringify(dataScan),
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.text())
-    .then(response => {
-      alert("Data berhasil disimpan!");
-    })
-    .catch(err => {
-      alert("Gagal menyimpan: " + err);
-    });
-  }
-
-  function hapusSemuaData() {
-    if (confirm("Yakin ingin menghapus semua data?")) {
-      dataScan = [];
-      saveDataToLocalStorage();
-      updateTable();
+    function hapusSemuaData() {
+      if (confirm("Yakin ingin menghapus semua data?")) {
+        dataScan = [];
+        saveDataToLocalStorage();
+        updateTable();
+      }
     }
-  }
 
 
     window.onload = loadDataFromLocalStorage;
   </script>
 </body>
 </html>
-
