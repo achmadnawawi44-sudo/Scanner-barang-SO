@@ -242,24 +242,21 @@
         return;
       }
 
-      // Ganti URL di bawah dengan URL Web App Google Apps Script kamu
-      const scriptURL = "https://script.google.com/macros/s/AKfycbw0Pdh5rnRsIyXkwFwrnqH0IWAQbe9fNfClx055m46OIQZdNEBVeoEpDwfyTD_sqdla/exec";
+      function simpanKeSpreadsheet() {
+  fetch("https://script.google.com/macros/s/AKfycbx.../exec", {
+    method: "POST",
+    body: JSON.stringify({
+      col1: "Data 1",
+      col2: "Data 2",
+      col3: "Data 3"
+    }),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(res => res.text())
+  .then(txt => alert(txt))
+  .catch(err => alert("Error: " + err));
+}
 
-      fetch(scriptURL, {
-        method: "POST",
-        body: JSON.stringify(dataScan),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      .then(res => res.text())
-      .then(response => {
-        alert("✅ Data berhasil disimpan ke Spreadsheet!");
-      })
-      .catch(err => {
-        alert("❌ Gagal menyimpan: " + err);
-      });
-    }
 
     function startScanner() {
       const readerDiv = document.getElementById("reader");
@@ -298,6 +295,7 @@
   </script>
 </body>
 </html>
+
 
 
 
