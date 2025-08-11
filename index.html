@@ -269,23 +269,16 @@
     return;
   }
 
-  fetch("https://script.google.com/macros/s/AKfycbxSKANrVEZUvKhWhS0Led7LGtI6zV8dIq39nY2pHYv5OQoeIQTm_j-FaclO0Rp6j1TC/exec", {
+ fetch("https://script.google.com/macros/s/AKfycbwR7l27JLpvpHsj6yE83wgM201rbR2aPYXfYplrBDI/dev", {
     method: "POST",
-    mode: "no-cors",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dataScan)
-  })
-  .then(() => {
-    alert("✅ Data berhasil dikirim ke Spreadsheet!");
-  })
-  .catch(err => {
-    alert("❌ Gagal mengirim data: " + err);
-  });
-}
+})
 
     window.onload = loadDataFromLocalStorage;
   </script>
 </body>
 </html>
+
 
 
