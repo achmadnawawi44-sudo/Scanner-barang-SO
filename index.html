@@ -16,53 +16,103 @@
     #reader { width: 100%; max-width: 400px; margin: 10px 0; display: none; }
     .button-group { display: flex; gap: 10px; margin-top: 10px; }
     .button-group button { flex: 1; }
+    #uploadedItemsTable { margin-top: 20px; }
+    .tab-container { display: flex; margin-bottom: 10px; }
+    .tab { padding: 10px 15px; cursor: pointer; background: #ddd; border-radius: 5px 5px 0 0; }
+    .tab.active { background: #fff; border-bottom: 2px solid #4CAF50; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/refs/heads/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
   <h2>Scanner Stok Opname Goto Living</h2>
 
-  <label>Nama Lokasi:</label>
-  <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
-  <div class="lokasi-buttons">
-    <button onclick="lockLokasi()">🔒Kunci Lokasi</button>
-    <button onclick="ubahLokasi()">🔓Ubah Lokasi</button>
+  <div class="tab-container">
+    <div class="tab active" onclick="openTab('scanTab')">Mode Scan</div>
+    <div class="tab" onclick="openTab('uploadTab')">Mode Upload Data</div>
   </div>
 
-  <hr>
+  <!-- Scan Tab -->
+  <div id="scanTab" class="tab-content active">
+    <label>Nama Lokasi:</label>
+    <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
+    <div class="lokasi-buttons">
+      <button onclick="lockLokasi()">🔒Kunci Lokasi</button>
+      <button onclick="ubahLokasi()">🔓Ubah Lokasi</button>
+    </div>
 
-  <label>📤Upload File Data Barang (CSV/XLSX):</label>
-  <input type="file" id="uploadFile" accept=".csv, .xlsx" />
-  <button onclick="handleFileUpload()">Upload</button>
+    <hr>
 
-  <hr>
+    <label>📤Upload File Data Barang (CSV/XLSX):</label>
+    <input type="file" id="uploadFile" accept=".csv, .xlsx" />
+    <button onclick="handleFileUpload()">Upload</button>
 
-  <label>Scan Barcode:</label>
-  <input type="text" id="barcodeInput" placeholder="Scan barcode..." />
-  <button onclick="startScanner()">📷 Scan Kamera</button>
-  <div id="reader"></div>
+    <hr>
 
-  <label>Nama Barang:</label>
-  <input type="text" id="namaBarangInput" disabled />
-  <label>Qty:</label>
-  <input type="number" id="qtyInput" placeholder="Jumlah..." />
-  <button onclick="tambahData()">Tambah</button>
+    <label>Scan Barcode:</label>
+    <input type="text" id="barcodeInput" placeholder="Scan barcode..." />
+    <button onclick="startScanner()">📷 Scan Kamera</button>
+    <div id="reader"></div>
 
-  <hr>
+    <label>Nama Barang:</label>
+    <input type="text" id="namaBarangInput" disabled />
+    <label>Qty:</label>
+    <input type="number" id="qtyInput" placeholder="Jumlah..." />
+    <button onclick="tambahData()">Tambah</button>
 
-  <h3>Data Stok Barang:</h3>
-  <table id="dataTable">
-    <thead>
-      <tr>
-        <th>Lokasi</th>
-        <th>Barcode</th>
-        <th>Nama Barang</th>
-        <th>Qty</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <hr>
+
+    <h3>Data Stok Barang:</h3>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Lokasi</th>
+          <th>Barcode</th>
+          <th>Nama Barang</th>
+          <th>Qty</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Upload Data Tab -->
+  <div id="uploadTab" class="tab-content">
+    <label>Nama Lokasi:</label>
+    <input type="text" id="uploadLokasiInput" placeholder="Contoh: Area A" />
+    <div class="lokasi-buttons">
+      <button onclick="lockUploadLokasi()">🔒Kunci Lokasi</button>
+      <button onclick="ubahUploadLokasi()">🔓Ubah Lokasi</button>
+    </div>
+
+    <hr>
+
+    <label>📤Upload File Data Barang (CSV/XLSX):</label>
+    <input type="file" id="bulkUploadFile" accept=".csv, .xlsx" />
+    <button onclick="handleBulkUpload()">Upload Data</button>
+
+    <hr>
+
+    <h3>Data yang Diupload:</h3>
+    <table id="uploadedItemsTable">
+      <thead>
+        <tr>
+          <th>Barcode</th>
+          <th>Nama Barang</th>
+          <th>Qty</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="uploadedItemsBody"></tbody>
+    </table>
+
+    <div class="button-group" style="margin-top: 20px;">
+      <button onclick="saveUploadedData()" style="background-color: #4CAF50; color: white;">Simpan Data</button>
+      <button onclick="clearUploadedData()" style="background-color: #f44336; color: white;">Hapus Data</button>
+    </div>
+  </div>
 
   <div class="button-group">
     <button onclick="exportData()">Export File</button>
@@ -74,14 +124,16 @@
     let dataBarang = {};
     let dataScan = JSON.parse(localStorage.getItem("dataScan")) || [];
     let lokasiTerkunci = false;
+    let uploadLokasiTerkunci = false;
     let scanner;
+    let uploadedItems = [];
 
     // Ganti dengan ID Spreadsheet Anda dan nama sheet
     const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
     const SHEET_NAME = 'Sheet1';
     
     // Ganti dengan URL Apps Script deployment Anda
-    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQsVZaPjUBdgyO1yzOn6XSE6X8_oWgEQeKDs2ESzvj/dev';
+    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFmDvPnIsINlbzt24bCUmGT7K9hOxJDaLuJ-1PLvTQteIYJ_y9M35p6z7u2tgA5-a4Rw/exec';
 
     function saveDataToLocalStorage() {
       localStorage.setItem("dataScan", JSON.stringify(dataScan));
@@ -89,6 +141,22 @@
 
     function loadDataFromLocalStorage() {
       updateTable();
+    }
+
+    function openTab(tabId) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show the selected tab content
+      document.getElementById(tabId).classList.add('active');
+      
+      // Update tab styling
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
     }
 
     function lockLokasi() {
@@ -106,6 +174,24 @@
       const lokasi = document.getElementById("lokasiInput");
       lokasi.disabled = false;
       lokasiTerkunci = false;
+      alert("Lokasi sekarang bisa diedit kembali.");
+    }
+
+    function lockUploadLokasi() {
+      const lokasi = document.getElementById("uploadLokasiInput");
+      if (lokasi.value.trim() === "") {
+        alert("Masukkan nama lokasi terlebih dahulu.");
+        return;
+      }
+      lokasi.disabled = true;
+      uploadLokasiTerkunci = true;
+      alert("Lokasi dikunci. Silakan upload data.");
+    }
+
+    function ubahUploadLokasi() {
+      const lokasi = document.getElementById("uploadLokasiInput");
+      lokasi.disabled = false;
+      uploadLokasiTerkunci = false;
       alert("Lokasi sekarang bisa diedit kembali.");
     }
 
@@ -150,6 +236,139 @@
       };
 
       reader.readAsArrayBuffer(file);
+    }
+
+    function handleBulkUpload() {
+      if (!uploadLokasiTerkunci) {
+        alert("Kunci lokasi terlebih dahulu.");
+        return;
+      }
+
+      const fileInput = document.getElementById("bulkUploadFile");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Pilih file terlebih dahulu.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+
+        uploadedItems = [];
+        let count = 0;
+        
+        json.forEach(item => {
+          const keys = Object.keys(item);
+          const barcodeKey = keys.find(k => k.toLowerCase().includes("barcode"));
+          const namaKey = keys.find(k => k.toLowerCase().includes("nama"));
+          const qtyKey = keys.find(k => k.toLowerCase().includes("qty") || k.toLowerCase().includes("quantity"));
+
+          if (barcodeKey && namaKey) {
+            const barcode = item[barcodeKey]?.toString().trim();
+            const nama = item[namaKey]?.toString().trim();
+            let qty = 0;
+            
+            if (qtyKey) {
+              qty = parseInt(item[qtyKey]) || 0;
+            }
+
+            if (barcode && nama) {
+              uploadedItems.push({
+                barcode: barcode,
+                nama: nama,
+                qty: qty
+              });
+              count++;
+            }
+          }
+        });
+
+        updateUploadedItemsTable();
+        alert(`✅ Berhasil upload ${count} data barang.`);
+      };
+
+      reader.onerror = function (error) {
+        alert("❌ Gagal membaca file.");
+        console.error("FileReader error:", error);
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    function updateUploadedItemsTable() {
+      const tbody = document.getElementById("uploadedItemsBody");
+      tbody.innerHTML = "";
+
+      uploadedItems.forEach((item, index) => {
+        const row = tbody.insertRow();
+        row.insertCell().innerText = item.barcode;
+        row.insertCell().innerText = item.nama;
+        
+        const qtyCell = row.insertCell();
+        const qtyInput = document.createElement("input");
+        qtyInput.type = "number";
+        qtyInput.value = item.qty;
+        qtyInput.onchange = (e) => {
+          uploadedItems[index].qty = parseInt(e.target.value) || 0;
+        };
+        qtyCell.appendChild(qtyInput);
+
+        const actionCell = row.insertCell();
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Hapus";
+        deleteBtn.onclick = () => {
+          uploadedItems.splice(index, 1);
+          updateUploadedItemsTable();
+        };
+        actionCell.appendChild(deleteBtn);
+      });
+    }
+
+    function saveUploadedData() {
+      if (!uploadLokasiTerkunci) {
+        alert("Kunci lokasi terlebih dahulu.");
+        return;
+      }
+
+      if (uploadedItems.length === 0) {
+        alert("Tidak ada data untuk disimpan.");
+        return;
+      }
+
+      const lokasi = document.getElementById("uploadLokasiInput").value;
+      
+      uploadedItems.forEach(item => {
+        const index = dataScan.findIndex(scan => scan.barcode === item.barcode && scan.lokasi === lokasi);
+        
+        if (index > -1) {
+          dataScan[index].qty += item.qty;
+        } else {
+          dataScan.push({
+            lokasi: lokasi,
+            barcode: item.barcode,
+            nama: item.nama,
+            qty: item.qty
+          });
+        }
+      });
+
+      saveDataToLocalStorage();
+      updateTable();
+      alert(`✅ Berhasil menyimpan ${uploadedItems.length} data barang.`);
+      uploadedItems = [];
+      updateUploadedItemsTable();
+    }
+
+    function clearUploadedData() {
+      if (confirm("Yakin ingin menghapus semua data yang diupload?")) {
+        uploadedItems = [];
+        updateUploadedItemsTable();
+      }
     }
 
     document.getElementById("barcodeInput").addEventListener("input", function () {
@@ -263,7 +482,7 @@
       }));
 
       // Kirim data ke Google Apps Script
-      fetch(https://script.google.com/macros/s/AKfycbyFmDvPnIsINlbzt24bCUmGT7K9hOxJDaLuJ-1PLvTQteIYJ_y9M35p6z7u2tgA5-a4Rw/exec, {
+      fetch(APP_SCRIPT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -278,10 +497,6 @@
       .then(data => {
         if (data.success) {
           alert("Data berhasil disimpan ke Google Spreadsheet!");
-          // Opsional: kosongkan data setelah berhasil disimpan
-          // dataScan = [];
-          // saveDataToLocalStorage();
-          // updateTable();
         } else {
           alert("Gagal menyimpan data: " + (data.message || 'Unknown error'));
         }
@@ -329,5 +544,3 @@
   </script>
 </body>
 </html>
-
-
