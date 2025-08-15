@@ -22,6 +22,17 @@
     .tab.active { background: #fff; border-bottom: 2px solid #4CAF50; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
+    /* Atur lebar kolom */
+th:nth-child(1), td:nth-child(1) { width: 15%; }  /* Barcode */
+th:nth-child(2), td:nth-child(2) { width: 55%; }  /* Nama Barang panjang */
+th:nth-child(3), td:nth-child(3) { width: 10%; }  /* Qty kecil */
+th:nth-child(4), td:nth-child(4) { width: 10%; }  /* Aksi */
+
+/* Atur ukuran input qty */
+td:nth-child(3) input {
+  width: 60px;   /* Kecil */
+  text-align: center;
+}
   </style>
 </head>
 <body>
@@ -567,4 +578,5 @@
   </script>
 </body>
 </html>
+
 
