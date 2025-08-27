@@ -23,58 +23,21 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     /* Atur lebar kolom */
-    th:nth-child(1), td:nth-child(1) { width: 15%; }  /* Barcode */
-    th:nth-child(2), td:nth-child(2) { width: 55%; }  /* Nama Barang panjang */
-    th:nth-child(3), td:nth-child(3) { width: 10%; }  /* Qty kecil */
-    th:nth-child(4), td:nth-child(4) { width: 10%; }  /* Aksi */
+th:nth-child(1), td:nth-child(1) { width: 15%; }  /* Barcode */
+th:nth-child(2), td:nth-child(2) { width: 55%; }  /* Nama Barang panjang */
+th:nth-child(3), td:nth-child(3) { width: 10%; }  /* Qty kecil */
+th:nth-child(4), td:nth-child(4) { width: 10%; }  /* Aksi */
 
-    /* Atur ukuran input qty */
-    td:nth-child(3) input {
-      width: 60px;   /* Kecil */
-      text-align: center;
-    }
-    
-    /* Loading indicator */
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    /* Status message */
-    .status-message {
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 4px;
-      display: none;
-    }
-    
-    .success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    
-    .error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
+/* Atur ukuran input qty */
+td:nth-child(3) input {
+  width: 60px;   /* Kecil */
+  text-align: center;
+}
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
   <h2>Scanner Stok Opname Goto Living</h2>
-
-  <div id="statusMessage" class="status-message"></div>
 
   <div class="tab-container">
     <div class="tab active" onclick="openTab('scanTab')">Mode Scan</div>
@@ -177,23 +140,11 @@
     let uploadedItems = [];
 
     // Ganti dengan ID Spreadsheet Anda
-    const SPREADSHEET_ID = '1Ydep-WvVQUFKAUtkUDA7Nfw-EcZtdVFpU6wfygKsjRI';
-    const SHEET_NAME = 'Stok Barang';
+    const SPREADSHEET_ID = '1dtHGZesUkrZ5M81145ghA0vRDFWb5c4Xm6MwBGFOuAc';
+    const SHEET_NAME = 'Sheet1';
     
-    // URL Apps Script deployment Anda - pastikan URL ini benar
-    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1CxDmyN9JKY4CPy6RvOLW3BGdUvFU-SMUpXy1azQrmIle7TYdxR6iGo9woD-Se5fxMg/exec';
-
-    function showStatus(message, isSuccess) {
-      const statusElement = document.getElementById('statusMessage');
-      statusElement.textContent = message;
-      statusElement.className = isSuccess ? 'status-message success' : 'status-message error';
-      statusElement.style.display = 'block';
-      
-      // Sembunyikan pesan setelah 5 detik
-      setTimeout(() => {
-        statusElement.style.display = 'none';
-      }, 5000);
-    }
+    // URL Apps Script deployment Anda
+    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyv0Hjs7qGztnkIhXXB9EbSbhHKJbqejNrxUHZhmVqHKs7l0SNmAF5L5gsHVDLgIKCT/exec';
 
     function saveDataToLocalStorage() {
       localStorage.setItem("dataScan", JSON.stringify(dataScan));
@@ -525,58 +476,56 @@
 
     function saveToGoogleSheet() {
       if (dataScan.length === 0) {
-        showStatus("Tidak ada data untuk disimpan.", false);
+        alert("Tidak ada data untuk disimpan.");
         return;
       }
 
       const lokasi = document.getElementById("lokasiInput").value;
       if (!lokasiTerkunci || !lokasi) {
-        showStatus("Kunci lokasi terlebih dahulu dan pastikan lokasi sudah diisi.", false);
+        alert("Kunci lokasi terlebih dahulu dan pastikan lokasi sudah diisi.");
         return;
       }
+
+      const dataToSend = {
+        spreadsheetId: SPREADSHEET_ID,
+        sheetName: SHEET_NAME,
+        data: dataScan.map(item => ({
+          ...item,
+          timestamp: new Date().toISOString()
+        }))
+      };
 
       // Tampilkan loading indicator
       const saveBtn = document.querySelector('button[onclick="saveToGoogleSheet()"]');
       const originalText = saveBtn.textContent;
-      saveBtn.innerHTML = '<span class="loading"></span> Menyimpan...';
+      saveBtn.textContent = "Menyimpan...";
       saveBtn.disabled = true;
 
-      // Format data untuk dikirim ke Google Sheets
-      const dataToSend = {
-        spreadsheetId: SPREADSHEET_ID,
-        sheetName: SHEET_NAME,
-        data: dataScan
-      };
-
-      console.log("Mengirim data ke Google Sheets:", dataToSend);
-
-      // Kirim data ke Google Apps Script
       fetch(APP_SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors', // Mode no-cors untuk menghindari CORS issues
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(dataToSend)
       })
       .then(response => {
-        // Karena menggunakan no-cors, kita tidak bisa membaca response
-        // Jadi kita asumsikan berhasil
-        console.log("Data berhasil dikirim (asumsi)");
-        showStatus("✅ Data berhasil dikirim ke Google Sheets!", true);
-        
-        // Reset tombol
-        saveBtn.textContent = originalText;
-        saveBtn.disabled = false;
-        
-        // Hapus data lokal setelah berhasil disimpan
-        hapusSemuaData();
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          alert(`✅ Data berhasil disimpan ke Google Sheet! ${data.rowsAdded} baris ditambahkan.`);
+        } else {
+          alert(`❌ Gagal menyimpan data: ${data.message}`);
+        }
       })
       .catch(error => {
         console.error('Error:', error);
-        showStatus("❌ Gagal mengirim data: " + error.message, false);
-        
-        // Reset tombol
+        alert("Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau export manual.");
+      })
+      .finally(() => {
         saveBtn.textContent = originalText;
         saveBtn.disabled = false;
       });
@@ -618,7 +567,6 @@
         dataScan = [];
         saveDataToLocalStorage();
         updateTable();
-        showStatus("Semua data telah dihapus.", true);
       }
     }
 
