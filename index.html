@@ -23,21 +23,61 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     /* Atur lebar kolom */
-th:nth-child(1), td:nth-child(1) { width: 15%; }  /* Barcode */
-th:nth-child(2), td:nth-child(2) { width: 55%; }  /* Nama Barang panjang */
-th:nth-child(3), td:nth-child(3) { width: 10%; }  /* Qty kecil */
-th:nth-child(4), td:nth-child(4) { width: 10%; }  /* Aksi */
+    th:nth-child(1), td:nth-child(1) { width: 15%; }  /* Barcode */
+    th:nth-child(2), td:nth-child(2) { width: 55%; }  /* Nama Barang panjang */
+    th:nth-child(3), td:nth-child(3) { width: 10%; }  /* Qty kecil */
+    th:nth-child(4), td:nth-child(4) { width: 10%; }  /* Aksi */
 
-/* Atur ukuran input qty */
-td:nth-child(3) input {
-  width: 60px;   /* Kecil */
-  text-align: center;
-}
+    /* Atur ukuran input qty */
+    td:nth-child(3) input {
+      width: 60px;   /* Kecil */
+      text-align: center;
+    }
+    
+    /* Modal konfirmasi */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
   <h2>Scanner Stok Opname Goto Living</h2>
+
+  <!-- Modal Konfirmasi -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <h3>Konfirmasi</h3>
+      <p>Apakah Anda yakin ingin meninggalkan halaman ini? Semua data yang belum disimpan akan hilang.</p>
+      <div class="modal-buttons">
+        <button onclick="confirmLeave(true)" style="background-color: #f44336; color: white;">Ya, Keluar</button>
+        <button onclick="confirmLeave(false)" style="background-color: #4CAF50; color: white;">Tidak, Tetap</button>
+      </div>
+    </div>
+  </div>
 
   <div class="tab-container">
     <div class="tab active" onclick="openTab('scanTab')">Mode Scan</div>
@@ -137,7 +177,8 @@ td:nth-child(3) input {
     let lokasiTerkunci = false;
     let uploadLokasiTerkunci = false;
     let scanner;
-    let uploadedItems = [];
+    let uploadedItems = JSON.parse(localStorage.getItem("uploadedItems")) || [];
+    let shouldConfirmLeave = false;
 
     // Ganti dengan ID Spreadsheet Anda
     const SPREADSHEET_ID = '1dtHGZesUkrZ5M81145ghA0vRDFWb5c4Xm6MwBGFOuAc';
@@ -146,12 +187,69 @@ td:nth-child(3) input {
     // URL Apps Script deployment Anda
     const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyv0Hjs7qGztnkIhXXB9EbSbhHKJbqejNrxUHZhmVqHKs7l0SNmAF5L5gsHVDLgIKCT/exec';
 
+    // Fungsi untuk menampilkan modal konfirmasi
+    function showConfirmModal() {
+      document.getElementById('confirmModal').style.display = 'block';
+      return new Promise((resolve) => {
+        window.resolveConfirmLeave = resolve;
+      });
+    }
+
+    // Fungsi untuk menangani hasil konfirmasi
+    function confirmLeave(shouldLeave) {
+      document.getElementById('confirmModal').style.display = 'none';
+      if (window.resolveConfirmLeave) {
+        window.resolveConfirmLeave(shouldLeave);
+      }
+    }
+
+    // Event listener untuk beforeunload
+    window.addEventListener('beforeunload', (event) => {
+      if (shouldConfirmLeave) {
+        event.preventDefault();
+        event.returnValue = '';
+        return '';
+      }
+    });
+
+    // Event listener untuk unload
+    window.addEventListener('unload', () => {
+      // Reset flag saat halaman benar-benar di-unload
+      shouldConfirmLeave = false;
+    });
+
+    // Intercept semua link dan form yang menyebabkan navigasi
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('a') || e.target.closest('button');
+      if (target && (target.tagName === 'A' || target.tagName === 'BUTTON')) {
+        if (shouldConfirmLeave && !target.hasAttribute('data-safe')) {
+          e.preventDefault();
+          showConfirmModal().then((shouldLeave) => {
+            if (shouldLeave) {
+              shouldConfirmLeave = false;
+              if (target.tagName === 'A') {
+                window.location.href = target.href;
+              } else {
+                target.click();
+              }
+            }
+          });
+        }
+      }
+    });
+
     function saveDataToLocalStorage() {
       localStorage.setItem("dataScan", JSON.stringify(dataScan));
+      localStorage.setItem("uploadedItems", JSON.stringify(uploadedItems));
+      shouldConfirmLeave = (uploadedItems.length > 0);
     }
 
     function loadDataFromLocalStorage() {
       updateTable();
+      updateUploadedItemsTable();
+      
+      // Set flag konfirmasi berdasarkan ada tidaknya data yang belum disimpan
+      shouldConfirmLeave = (uploadedItems.length > 0);
     }
 
     function openTab(tabId) {
@@ -299,6 +397,7 @@ td:nth-child(3) input {
           });
 
           updateUploadedItemsTable();
+          saveDataToLocalStorage();
           alert(`✅ Berhasil upload ${count} data barang.`);
         } catch (error) {
           alert("❌ Gagal membaca file: " + error.message);
@@ -326,6 +425,7 @@ td:nth-child(3) input {
         qtyInput.value = item.qty;
         qtyInput.onchange = (e) => {
           uploadedItems[index].qty = parseInt(e.target.value) || 0;
+          saveDataToLocalStorage();
         };
         qtyCell.appendChild(qtyInput);
 
@@ -335,6 +435,7 @@ td:nth-child(3) input {
         deleteBtn.onclick = () => {
           uploadedItems.splice(index, 1);
           updateUploadedItemsTable();
+          saveDataToLocalStorage();
         };
         actionCell.appendChild(deleteBtn);
       });
@@ -373,12 +474,14 @@ td:nth-child(3) input {
       alert(`✅ Berhasil menyimpan ${uploadedItems.length} data barang.`);
       uploadedItems = [];
       updateUploadedItemsTable();
+      saveDataToLocalStorage();
     }
 
     function clearUploadedData() {
       if (confirm("Yakin ingin menghapus semua data yang diupload?")) {
         uploadedItems = [];
         updateUploadedItemsTable();
+        saveDataToLocalStorage();
       }
     }
 
