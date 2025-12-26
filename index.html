@@ -130,12 +130,63 @@
       max-width: 600px;
     }
     
+    /* STYLE KHUSUS UNTUK TABEL MUAT DATA */
+    .location-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 0px !important;
+    }
+    .location-items-table th {
+      background-color: #f5f5f5;
+      position: sticky;
+      top: 0;
+      padding: 8px;
+      border-bottom: 2px solid #ddd;
+      border-right: 0px !important;
+      border-left: 0px !important;
+      border-top: 0px !important;
+    }
+    .location-items-table td {
+      padding: 8px;
+      border: 0px !important;
+      border-bottom: 1px solid #f0f0f0 !important;
+    }
+    .location-items-table tr:hover {
+      background-color: #f9f9f9;
+    }
+    
+    /* Template info box */
+    .template-info {
+      background: #e8f4fd;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      border-left: 4px solid #2196F3;
+      font-size: 13px;
+    }
+    .template-info strong {
+      color: #2196F3;
+    }
+    .template-item {
+      display: inline-block;
+      background: white;
+      padding: 2px 8px;
+      margin: 2px;
+      border-radius: 3px;
+      border: 1px solid #2196F3;
+      font-weight: bold;
+    }
+    
     @media (max-width: 768px) {
       body { padding: 10px; }
       .button-group { flex-direction: column; }
       .button-group button { width: 100%; }
       .lokasi-buttons { flex-direction: column; }
       #reader { max-width: 100%; }
+      .modal-content.long {
+        width: 95%;
+        margin: 10% auto;
+      }
     }
   </style>
 </head>
@@ -159,18 +210,34 @@
     </div>
   </div>
 
-  <!-- Modal Pilih Lokasi -->
+  <!-- Modal Pilih Lokasi (DIPERBARUI) -->
   <div id="locationModal" class="modal">
     <div class="modal-content long">
-      <h3>Ambil Data per Lokasi</h3>
-      <p>Pilih lokasi untuk mengambil data dan mengisi qty:</p>
+      <h3 style="margin-top: 0;">📂 Ambil Data per Lokasi</h3>
+      
+      <!-- Template Info -->
+      <div class="template-info">
+        <strong>📋 Template Data:</strong>
+        <div style="margin-top: 8px;">
+          <span class="template-item">Barcode</span> → 
+          <span class="template-item">Nama</span> → 
+          <span class="template-item">Qty</span>
+        </div>
+        <div style="font-size: 12px; color: #666; margin-top: 8px;">
+          • <strong>Barcode</strong>: Kode unik barang<br>
+          • <strong>Nama</strong>: Nama barang<br>
+          • <strong>Qty</strong>: Jumlah stok (akan diisi manual)
+        </div>
+      </div>
+      
+      <p>Pilih lokasi untuk mengambil data:</p>
       
       <div id="locationList" class="user-list">
         <!-- Lokasi akan dimuat di sini -->
       </div>
       
       <div style="margin: 15px 0;">
-        <label>Filter Lokasi:</label>
+        <label>🔍 Filter Lokasi:</label>
         <input type="text" id="filterLocation" placeholder="Cari lokasi..." style="width: 100%; padding: 8px; margin-top: 5px;" />
       </div>
       
@@ -189,34 +256,51 @@
       </div>
       
       <div class="modal-buttons">
-        <button id="loadLocationDataBtn" style="background-color: #4CAF50; color: white; display: none;">Muat Data</button>
-        <button id="closeLocationModalBtn" style="background-color: #f44336; color: white;">Tutup</button>
+        <button id="loadLocationDataBtn" style="background-color: #4CAF50; color: white; display: none;">
+          📥 Muat Data
+        </button>
+        <button id="closeLocationModalBtn" style="background-color: #f44336; color: white;">
+          ✕ Tutup
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal Isi Qty per Item -->
+  <!-- Modal Isi Qty per Item (DIPERBARUI - BORDER 0px) -->
   <div id="qtyModal" class="modal">
     <div class="modal-content long">
-      <h3>Isi Qty untuk <span id="modalLocationName"></span></h3>
+      <h3 style="margin-top: 0;">✏️ Isi Qty untuk <span id="modalLocationName" style="color: #2196F3;"></span></h3>
       
-      <div style="margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-          <div id="currentLocationInfo"></div>
-          <button id="selectAllBtn" style="background-color: #2196F3; color: white; padding: 5px 10px;">Pilih Semua</button>
+      <!-- Template reminder -->
+      <div class="template-info" style="background: #f0f8ff; border-left-color: #4CAF50;">
+        <strong>📝 Template yang digunakan:</strong>
+        <div style="margin-top: 8px;">
+          <span class="template-item" style="border-color: #4CAF50;">Barcode</span> | 
+          <span class="template-item" style="border-color: #4CAF50;">Nama</span> | 
+          <span class="template-item" style="border-color: #4CAF50;">Qty</span>
         </div>
       </div>
       
-      <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
-        <table id="locationItemsTable" style="width: 100%; border-collapse: collapse;">
+      <div style="margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div id="currentLocationInfo" style="font-weight: bold;"></div>
+          <button id="selectAllBtn" style="background-color: #2196F3; color: white; padding: 6px 12px;">
+            ✅ Pilih Semua
+          </button>
+        </div>
+      </div>
+      
+      <!-- Container tabel dengan border 0px -->
+      <div style="max-height: 400px; overflow-y: auto; border: 0px; border-radius: 4px;">
+        <table class="location-items-table">
           <thead>
-            <tr style="background-color: #f5f5f5; position: sticky; top: 0;">
-              <th style="padding: 8px; border-bottom: 2px solid #ddd; width: 50px;">
+            <tr>
+              <th style="width: 50px; text-align: center;">
                 <input type="checkbox" id="selectAllCheckbox" />
               </th>
-              <th style="padding: 8px; border-bottom: 2px solid #ddd;">Nama</th>
-              <th style="padding: 8px; border-bottom: 2px solid #ddd;">Barcode</th>
-              <th style="padding: 8px; border-bottom: 2px solid #ddd; width: 120px;">Qty</th>
+              <th style="font-weight: bold;">Barcode</th>
+              <th style="font-weight: bold;">Nama Barang</th>
+              <th style="width: 120px; font-weight: bold;">Qty Scan</th>
             </tr>
           </thead>
           <tbody id="locationItemsBody">
@@ -226,10 +310,14 @@
       </div>
       
       <div style="margin-top: 15px; text-align: center;">
-        <div id="selectedCount" style="font-size: 14px; color: #666; margin-bottom: 10px;"></div>
+        <div id="selectedCount" style="font-size: 14px; color: #666; margin-bottom: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px;"></div>
         <div class="modal-buttons">
-          <button id="saveQtyBtn" style="background-color: #4CAF50; color: white;">Simpan ke Data Scan</button>
-          <button id="closeQtyModalBtn" style="background-color: #f44336; color: white;">Batal</button>
+          <button id="saveQtyBtn" style="background-color: #4CAF50; color: white; padding: 10px 20px;">
+            💾 Simpan ke Data Scan
+          </button>
+          <button id="closeQtyModalBtn" style="background-color: #f44336; color: white; padding: 10px 20px;">
+            ✕ Batal
+          </button>
         </div>
       </div>
     </div>
@@ -243,25 +331,25 @@
 
   <!-- Scan Tab -->
   <div id="scanTab" class="tab-content active">
-    <label>User:</label>
+    <label>👤 User:</label>
     <input type="text" id="userInput" placeholder="Nama user" value="User 1" />
     
-    <label>Nama Lokasi:</label>
+    <label>📍 Nama Lokasi:</label>
     <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
     <div class="lokasi-buttons">
-      <button id="lockLokasiBtn">🔒Kunci Lokasi</button>
-      <button id="ubahLokasiBtn">🔓Ubah Lokasi</button>
+      <button id="lockLokasiBtn">🔒 Kunci Lokasi</button>
+      <button id="ubahLokasiBtn">🔓 Ubah Lokasi</button>
     </div>
 
     <hr>
 
-    <label>📤Upload File Data Barang (CSV/XLSX):</label>
+    <label>📤 Upload File Data Barang (CSV/XLSX):</label>
     <input type="file" id="uploadFile" accept=".csv, .xlsx" />
     <button id="uploadFileBtn">Upload</button>
 
     <hr>
 
-    <label>Scan Barcode:</label>
+    <label>📷 Scan Barcode:</label>
     <input type="text" id="barcodeInput" placeholder="Scan barcode..." autofocus />
     
     <button id="scannerButton">📷 Aktifkan Kamera</button>
@@ -269,15 +357,15 @@
     <div id="cameraStatus" class="camera-status inactive">Kamera tidak aktif</div>
     <div id="reader"></div>
 
-    <label>Nama:</label>
+    <label>📦 Nama Barang:</label>
     <input type="text" id="namaBarangInput" disabled />
-    <label>Qty:</label>
+    <label>🔢 Qty:</label>
     <input type="number" id="qtyInput" placeholder="Jumlah..." />
-    <button id="tambahDataBtn">Tambah</button>
+    <button id="tambahDataBtn" style="background-color: #4CAF50; color: white;">➕ Tambah</button>
 
     <hr>
 
-    <h3>Data Stok Barang:</h3>
+    <h3>📊 Data Stok Barang:</h3>
     <table id="dataTable">
       <thead>
         <tr>
@@ -295,25 +383,25 @@
 
   <!-- Upload Data Tab -->
   <div id="uploadTab" class="tab-content">
-    <label>User:</label>
+    <label>👤 User:</label>
     <input type="text" id="uploadUserInput" placeholder="Nama user" value="User 1" />
     
-    <label>Nama Lokasi:</label>
+    <label>📍 Nama Lokasi:</label>
     <input type="text" id="uploadLokasiInput" placeholder="Contoh: Area A" />
     <div class="lokasi-buttons">
-      <button id="lockUploadLokasiBtn">🔒Kunci Lokasi</button>
-      <button id="ubahUploadLokasiBtn">🔓Ubah Lokasi</button>
+      <button id="lockUploadLokasiBtn">🔒 Kunci Lokasi</button>
+      <button id="ubahUploadLokasiBtn">🔓 Ubah Lokasi</button>
     </div>
 
     <hr>
 
-    <label>📤Upload File Data Barang (CSV/XLSX):</label>
+    <label>📤 Upload File Data Barang (CSV/XLSX):</label>
     <input type="file" id="bulkUploadFile" accept=".csv, .xlsx" />
-    <button id="bulkUploadBtn">Upload Data</button>
+    <button id="bulkUploadBtn">📥 Upload Data</button>
 
     <hr>
 
-    <h3>Data yang Diupload:</h3>
+    <h3>📄 Data yang Diupload:</h3>
     <table id="uploadedItemsTable">
       <thead>
         <tr>
@@ -327,18 +415,18 @@
     </table>
 
     <div class="button-group" style="margin-top: 20px;">
-      <button id="saveUploadedDataBtn" style="background-color: #4CAF50; color: white;">Simpan Data</button>
-      <button id="clearUploadedDataBtn" style="background-color: #f44336; color: white;">Hapus Data</button>
+      <button id="saveUploadedDataBtn" style="background-color: #4CAF50; color: white;">💾 Simpan Data</button>
+      <button id="clearUploadedDataBtn" style="background-color: #f44336; color: white;">🗑️ Hapus Data</button>
     </div>
   </div>
 
   <!-- Main Buttons -->
   <div class="button-group">
-    <button id="exportDataBtn">Download Data (Excel)</button>
-    <button id="showLocationDataBtn" style="background-color: #10b981; color: white;">Ambil Data per Lokasi</button>
-    <button id="saveToSupabaseBtn" style="background-color: #3b82f6; color: white;">Simpan ke Supabase</button>
-    <button id="showSupabaseConfigBtn" style="background-color: #6b7280; color: white;">Supabase Settings</button>
-    <button id="hapusSemuaDataBtn" style="background-color: red; color: white;">Hapus Semua Data</button>
+    <button id="exportDataBtn" style="background-color: #10b981; color: white;">📥 Download Data (Excel)</button>
+    <button id="showLocationDataBtn" style="background-color: #3b82f6; color: white;">📂 Ambil Data per Lokasi</button>
+    <button id="saveToSupabaseBtn" style="background-color: #8b5cf6; color: white;">☁️ Simpan ke Supabase</button>
+    <button id="showSupabaseConfigBtn" style="background-color: #6b7280; color: white;">⚙️ Supabase Settings</button>
+    <button id="hapusSemuaDataBtn" style="background-color: #ef4444; color: white;">🗑️ Hapus Semua Data</button>
   </div>
 
   <script>
@@ -351,24 +439,18 @@
     let uploadedItems = [];
     let supabaseClient = null;
     let isFetchingData = false;
-    let cameraActive = false; // Variabel untuk melacak status kamera
+    let cameraActive = false;
 
     // =============== FUNGSI INISIALISASI ===============
     function initApp() {
       console.log('Initializing app...');
       
-      // Load data dari localStorage
       try {
         const savedDataScan = localStorage.getItem("dataScan");
         const savedUploadedItems = localStorage.getItem("uploadedItems");
         
-        if (savedDataScan) {
-          dataScan = JSON.parse(savedDataScan);
-        }
-        
-        if (savedUploadedItems) {
-          uploadedItems = JSON.parse(savedUploadedItems);
-        }
+        if (savedDataScan) dataScan = JSON.parse(savedDataScan);
+        if (savedUploadedItems) uploadedItems = JSON.parse(savedUploadedItems);
       } catch (error) {
         console.error("Error loading from localStorage:", error);
       }
@@ -376,7 +458,6 @@
       updateTable();
       updateUploadedItemsTable();
       
-      // Cek konfigurasi Supabase
       const supabaseUrl = localStorage.getItem("supabaseUrl");
       const supabaseKey = localStorage.getItem("supabaseKey");
       
@@ -384,16 +465,12 @@
         initSupabaseClient(supabaseUrl, supabaseKey);
       }
       
-      // Setup event listeners
       setupEventListeners();
       
-      // Fokus ke input barcode
       setTimeout(() => {
         const barcodeInput = document.getElementById("barcodeInput");
         if (barcodeInput) barcodeInput.focus();
       }, 500);
-      
-      console.log('App initialized successfully');
     }
 
     // =============== FUNGSI TABEL ===============
@@ -414,7 +491,7 @@
         const aksiCell = row.insertCell();
         
         const editBtn = document.createElement("button");
-        editBtn.textContent = "Edit";
+        editBtn.textContent = "✏️ Edit";
         editBtn.style.marginRight = "5px";
         editBtn.style.backgroundColor = "#ffc107";
         editBtn.style.color = "black";
@@ -429,7 +506,7 @@
         aksiCell.appendChild(editBtn);
 
         const delBtn = document.createElement("button");
-        delBtn.textContent = "Hapus";
+        delBtn.textContent = "🗑️ Hapus";
         delBtn.style.backgroundColor = "#f44336";
         delBtn.style.color = "white";
         delBtn.onclick = () => {
@@ -467,7 +544,7 @@
 
         const actionCell = row.insertCell();
         const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Hapus";
+        deleteBtn.textContent = "🗑️";
         deleteBtn.style.backgroundColor = "#f44336";
         deleteBtn.style.color = "white";
         deleteBtn.onclick = () => {
@@ -539,7 +616,7 @@
       }
     }
 
-    // =============== FUNGSI AMBIL DATA PER LOKASI ===============
+    // =============== FUNGSI AMBIL DATA PER LOKASI (DIPERBARUI) ===============
     async function showLocationDataModal() {
       if (!supabaseClient) {
         alert("Silakan konfigurasi Supabase terlebih dahulu.");
@@ -577,7 +654,6 @@
         
         console.log('Memulai pengambilan data dari Supabase...');
         
-        // Ambil total count terlebih dahulu
         loadingDetails.textContent = 'Menghitung total data...';
         const { count, error: countError } = await supabaseClient
           .from('stok_barang')
@@ -599,7 +675,6 @@
           return;
         }
         
-        // Ambil data dengan pagination
         const pageSize = 1000;
         const totalPages = Math.ceil(totalData / pageSize);
         let allData = [];
@@ -616,7 +691,7 @@
           
           const { data, error } = await supabaseClient
             .from('stok_barang')
-            .select('*')
+            .select('barcode, nama, lokasi, qty')
             .range(from, to)
             .order('lokasi', { ascending: true });
           
@@ -626,7 +701,6 @@
           
           if (data && data.length > 0) {
             allData = allData.concat(data);
-            console.log(`Halaman ${page + 1}: ${data.length} data, total: ${allData.length} data`);
           }
           
           await new Promise(resolve => setTimeout(resolve, 100));
@@ -642,7 +716,6 @@
           return;
         }
         
-        // Kelompokkan data berdasarkan lokasi
         loadingDetails.textContent = 'Mengelompokkan data berdasarkan lokasi...';
         progressBar.style.width = '100%';
         progressBar.textContent = '100%';
@@ -658,16 +731,14 @@
         
         console.log(`Jumlah lokasi: ${Object.keys(groupedData).length}`);
         
-        // Tampilkan tombol lokasi
         locationList.innerHTML = '';
         const locations = Object.keys(groupedData).sort();
         
-        // Tambahkan tombol "Semua Lokasi"
         const allButton = document.createElement('button');
         allButton.className = 'user-button';
         allButton.dataset.location = 'Semua Lokasi';
         allButton.innerHTML = `
-          Semua Lokasi
+          📁 Semua Lokasi
           <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
             ${allData.length.toLocaleString()}
           </span>
@@ -677,14 +748,13 @@
         };
         locationList.appendChild(allButton);
         
-        // Tambahkan tombol untuk setiap lokasi
         locations.forEach(location => {
           if (groupedData[location].length > 0) {
             const button = document.createElement('button');
             button.className = 'user-button';
             button.dataset.location = location;
             button.innerHTML = `
-              ${location} 
+              📍 ${location} 
               <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
                 ${groupedData[location].length.toLocaleString()}
               </span>
@@ -696,7 +766,6 @@
           }
         });
         
-        // Setup filter
         const filterInput = document.getElementById('filterLocation');
         if (filterInput) {
           filterInput.oninput = function() {
@@ -709,13 +778,11 @@
           };
         }
         
-        // Sembunyikan progress bar
         setTimeout(() => {
           progressBarContainer.style.display = 'none';
           loadingStatus.style.display = 'none';
         }, 1000);
         
-        // Tampilkan statistik
         const statsDiv = document.createElement('div');
         statsDiv.style.marginTop = '10px';
         statsDiv.style.padding = '10px';
@@ -726,7 +793,7 @@
           <strong>✅ Data berhasil dimuat!</strong><br>
           • Total data: ${allData.length.toLocaleString()} item<br>
           • Lokasi: ${locations.length} lokasi<br>
-          • Data terbaru: ${allData.length > 0 ? new Date(allData[0].created_at || Date.now()).toLocaleDateString('id-ID') : 'N/A'}
+          • Template: <strong>Barcode | Nama | Qty</strong>
         `;
         locationList.parentNode.insertBefore(statsDiv, locationList.nextSibling);
         
@@ -736,7 +803,7 @@
         if (locationList) {
           locationList.innerHTML = `
             <div style="text-align: center; padding: 20px; color: #f44336;">
-              <h4>Gagal memuat data dari Supabase</h4>
+              <h4>❌ Gagal memuat data dari Supabase</h4>
               <p style="font-size: 12px;">${error.message}</p>
             </div>
           `;
@@ -752,12 +819,10 @@
     }
 
     function selectLocationInModal(location, items, target) {
-      // Update UI
       const buttons = document.querySelectorAll('#locationList .user-button');
       buttons.forEach(btn => btn.classList.remove('active'));
       target.classList.add('active');
       
-      // Tampilkan info lokasi
       const infoDiv = document.getElementById('locationDataInfo');
       const infoContent = document.getElementById('selectedLocationInfo');
       const countDiv = document.getElementById('locationItemCount');
@@ -765,11 +830,10 @@
       
       if (infoDiv && infoContent && countDiv && loadBtn) {
         infoDiv.style.display = 'block';
-        infoContent.innerHTML = `<strong>${location}</strong> dipilih`;
-        countDiv.textContent = `${items.length.toLocaleString()} item ditemukan`;
+        infoContent.innerHTML = `<strong>📍 ${location}</strong> dipilih`;
+        countDiv.textContent = `${items.length.toLocaleString()} item ditemukan | Template: Barcode, Nama, Qty`;
         loadBtn.style.display = 'block';
         
-        // Simpan data lokasi yang dipilih
         loadBtn.dataset.location = location;
         loadBtn.dataset.items = JSON.stringify(items);
       }
@@ -785,13 +849,11 @@
       const location = loadBtn.dataset.location;
       const items = JSON.parse(loadBtn.dataset.items);
       
-      // Tutup modal lokasi
       document.getElementById('locationModal').style.display = 'none';
-      
-      // Tampilkan modal isi qty
       showQtyModal(location, items);
     }
 
+    // =============== FUNGSI SHOW QTY MODAL (DIPERBARUI - BORDER 0px) ===============
     function showQtyModal(location, items) {
       const modal = document.getElementById('qtyModal');
       const locationNameSpan = document.getElementById('modalLocationName');
@@ -800,16 +862,16 @@
       
       if (!modal || !locationNameSpan || !currentLocationInfo || !itemsBody) return;
       
-      // Set data lokasi
       locationNameSpan.textContent = location;
       currentLocationInfo.innerHTML = `
         <div>
-          <strong>${location}</strong>
-          <div style="font-size: 12px; color: #666;">${items.length.toLocaleString()} item</div>
+          <strong>📍 ${location}</strong>
+          <div style="font-size: 12px; color: #666;">
+            ${items.length.toLocaleString()} item | Template: <strong>Barcode | Nama | Qty</strong>
+          </div>
         </div>
       `;
       
-      // Isi tabel items (maksimal 500 item untuk performa)
       itemsBody.innerHTML = '';
       
       const displayItems = items.slice(0, 500);
@@ -826,7 +888,7 @@
         if (items.length > 500) {
           const warningRow = document.createElement('tr');
           warningRow.innerHTML = `
-            <td colspan="4" style="text-align: center; padding: 10px; background: #fff3cd; color: #856404;">
+            <td colspan="4" style="text-align: center; padding: 10px; background: #fff3cd; color: #856404; border: 0px;">
               <strong>Info:</strong> Menampilkan 500 item pertama dari ${items.length.toLocaleString()} item total
             </td>
           `;
@@ -835,32 +897,33 @@
         
         displayItems.forEach((item, index) => {
           const row = document.createElement('tr');
-          row.style.borderBottom = '1px solid #eee';
+          row.style.border = '0px';
+          row.style.borderBottom = '1px solid #f0f0f0';
           
-          // Gunakan field yang benar dari database
-          const namaBarang = item.nama || item.nama_barang || item.item_name || 'N/A';
+          // SESUAI TEMPLATE: Barcode, Nama, Qty
           const barcodeBarang = item.barcode || item.kode || item.kode_barang || '-';
+          const namaBarang = item.nama || item.nama_barang || item.item_name || 'N/A';
           const qtyBarang = item.qty || item.quantity || item.stock || 0;
           
           row.innerHTML = `
-            <td style="padding: 8px; text-align: center;">
+            <td style="text-align: center; border: 0px;">
               <input type="checkbox" class="item-checkbox" data-index="${index}" />
             </td>
-            <td style="padding: 8px;">
-              ${namaBarang}
-              ${qtyBarang ? `<div style="font-size: 11px; color: #666;">Stok: ${qtyBarang}</div>` : ''}
-            </td>
-            <td style="padding: 8px; font-family: monospace;">
+            <td style="font-family: monospace; font-weight: bold; border: 0px;">
               ${barcodeBarang}
             </td>
-            <td style="padding: 8px;">
+            <td style="border: 0px;">
+              ${namaBarang}
+              ${qtyBarang ? `<div style="font-size: 11px; color: #888;">Stok: ${qtyBarang}</div>` : ''}
+            </td>
+            <td style="border: 0px;">
               <input type="number" 
                      class="item-qty" 
                      data-index="${index}"
                      min="0" 
                      value="0" 
-                     style="width: 80px; padding: 4px; text-align: center;"
-                     placeholder="Qty scan" />
+                     style="width: 80px; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 3px;"
+                     placeholder="Qty" />
             </td>
           `;
           
@@ -868,10 +931,7 @@
         });
       }
       
-      // Update selected count
       updateSelectedCount();
-      
-      // Tampilkan modal
       modal.style.display = 'block';
     }
 
@@ -880,7 +940,11 @@
       const countDiv = document.getElementById('selectedCount');
       
       if (countDiv) {
-        countDiv.textContent = `${checkboxes.length} item dipilih`;
+        if (checkboxes.length > 0) {
+          countDiv.innerHTML = `<strong>${checkboxes.length} item</strong> dipilih untuk disimpan`;
+        } else {
+          countDiv.innerHTML = 'Pilih item dan isi qty untuk menyimpan';
+        }
       }
     }
 
@@ -902,7 +966,6 @@
       const locationName = document.getElementById('modalLocationName').textContent;
       const user = document.getElementById("userInput").value || "Unknown";
       
-      // Ambil semua baris dari tabel
       const rows = document.querySelectorAll('#locationItemsBody tr');
       const selectedItems = [];
       
@@ -910,25 +973,18 @@
         const checkbox = row.querySelector('.item-checkbox');
         const qtyInput = row.querySelector('.item-qty');
         
-        // Periksa apakah checkbox dicentang
         if (checkbox && checkbox.checked) {
           const qty = parseInt(qtyInput.value) || 0;
           if (qty > 0) {
-            // Ambil data dari baris
             const cells = row.querySelectorAll('td');
             
-            // Cell 1: checkbox, Cell 2: nama, Cell 3: barcode, Cell 4: qty input
-            const namaCell = cells[1];
-            const barcodeCell = cells[2];
-            
-            // Ambil teks dari sel, hapus informasi tambahan
-            let namaText = namaCell.textContent;
-            // Hapus "Stok: X" jika ada
-            namaText = namaText.split('Stok:')[0].trim();
+            const barcodeCell = cells[1];
+            const namaCell = cells[2];
             
             const barcode = barcodeCell.textContent.trim();
+            let namaText = namaCell.textContent;
+            namaText = namaText.split('Stok:')[0].trim();
             
-            // Simpan data item yang dipilih
             selectedItems.push({
               barcode: barcode,
               nama: namaText,
@@ -945,13 +1001,11 @@
         return;
       }
       
-      // Simpan ke dataScan
       let count = 0;
       selectedItems.forEach(item => {
         const { barcode, nama, qty, lokasi, user } = item;
         
         if (barcode && barcode !== '-' && nama && nama !== 'N/A') {
-          // Cek apakah item sudah ada di dataScan
           const existingIndex = dataScan.findIndex(scan => 
             scan.barcode === barcode && 
             scan.lokasi === lokasi && 
@@ -959,10 +1013,8 @@
           );
           
           if (existingIndex > -1) {
-            // Update qty jika sudah ada
             dataScan[existingIndex].qty += qty;
           } else {
-            // Tambah data baru
             dataScan.push({
               user: user,
               lokasi: lokasi,
@@ -975,11 +1027,9 @@
         }
       });
       
-      // Update table dan simpan
       saveDataToLocalStorage();
       updateTable();
       
-      // Tutup modal
       document.getElementById('qtyModal').style.display = 'none';
       
       alert(`✅ ${count} item berhasil ditambahkan ke data scan untuk lokasi ${locationName}.`);
@@ -994,7 +1044,7 @@
       }
       lokasiInput.disabled = true;
       lokasiTerkunci = true;
-      alert("Lokasi berhasil dikunci!");
+      alert("✅ Lokasi berhasil dikunci!");
     }
 
     function ubahLokasi() {
@@ -1012,7 +1062,7 @@
       }
       lokasiInput.disabled = true;
       uploadLokasiTerkunci = true;
-      alert("Lokasi berhasil dikunci!");
+      alert("✅ Lokasi berhasil dikunci!");
     }
 
     function ubahUploadLokasi() {
@@ -1063,17 +1113,14 @@
         return;
       }
       
-      // Cek apakah item sudah ada
       const existingIndex = dataScan.findIndex(item => 
         item.barcode === barcode && item.lokasi === lokasi && item.user === user
       );
       
       if (existingIndex > -1) {
-        // Update qty jika sudah ada
         dataScan[existingIndex].qty += qty;
-        alert(`Qty untuk ${nama} diperbarui menjadi ${dataScan[existingIndex].qty}`);
+        alert(`✅ Qty untuk ${nama} diperbarui menjadi ${dataScan[existingIndex].qty}`);
       } else {
-        // Tambah data baru
         dataScan.push({
           user: user,
           lokasi: lokasi,
@@ -1081,18 +1128,14 @@
           nama: nama,
           qty: qty
         });
-        alert(`Data ${nama} berhasil ditambahkan!`);
+        alert(`✅ Data ${nama} berhasil ditambahkan!`);
       }
       
-      // Reset input
       document.getElementById("barcodeInput").value = "";
       document.getElementById("namaBarangInput").value = "";
       document.getElementById("qtyInput").value = "";
-      
-      // Fokus kembali ke input barcode
       document.getElementById("barcodeInput").focus();
       
-      // Update table dan simpan
       saveDataToLocalStorage();
       updateTable();
     }
@@ -1108,10 +1151,8 @@
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
         
-        // Reset dataBarang
         dataBarang = {};
         
-        // Asumsi kolom: Barcode di kolom 0, Nama di kolom 1
         jsonData.forEach(row => {
           if (row[0] && row[1]) {
             dataBarang[row[0].toString()] = row[1].toString();
@@ -1143,12 +1184,10 @@
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
         
-        // Reset uploadedItems
         uploadedItems = [];
         
-        // Asumsi kolom: Barcode di kolom 0, Nama di kolom 1, Qty di kolom 2
         jsonData.forEach((row, index) => {
-          if (index === 0) return; // Skip header
+          if (index === 0) return;
           
           if (row[0] && row[1]) {
             uploadedItems.push({
@@ -1174,7 +1213,6 @@
         return;
       }
       
-      // Tambahkan semua uploadedItems ke dataScan
       uploadedItems.forEach(item => {
         const existingIndex = dataScan.findIndex(scan => 
           scan.barcode === item.barcode && 
@@ -1189,7 +1227,6 @@
         }
       });
       
-      // Kosongkan uploadedItems
       uploadedItems = [];
       updateUploadedItemsTable();
       saveDataToLocalStorage();
@@ -1206,13 +1243,12 @@
       }
     }
 
-    // =============== FUNGSI KAMERA YANG SUDAH TERBUKTI BERHASIL ===============
+    // =============== FUNGSI KAMERA ===============
     async function toggleScanner() {
       const scannerButton = document.getElementById("scannerButton");
       const cameraStatus = document.getElementById("cameraStatus");
       const readerDiv = document.getElementById("reader");
       
-      // Hentikan scanner jika aktif
       if (scanner && cameraActive) {
         try {
           await scanner.stop();
@@ -1228,7 +1264,6 @@
         }
       }
       
-      // Mulai scanner
       readerDiv.style.display = "block";
       readerDiv.innerHTML = "<div style='padding: 20px; text-align: center;'>Menginisialisasi kamera...</div>";
 
@@ -1249,12 +1284,10 @@
             const nama = dataBarang[decodedText];
             document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
             
-            // Auto focus ke qty input
             setTimeout(() => {
               document.getElementById("qtyInput").focus();
             }, 100);
             
-            // Hentikan scanner setelah scan berhasil
             scanner.stop().then(() => {
               cameraActive = false;
               readerDiv.innerHTML = "";
@@ -1267,7 +1300,6 @@
             });
           },
           (errorMsg) => {
-            // Error callback - abaikan error "NotFoundException"
             if (errorMsg && !errorMsg.includes("NotFoundException")) {
               console.log("Scanning...", errorMsg);
             }
@@ -1293,16 +1325,13 @@
           errorMessage += err.toString();
         }
         
-        // Tampilkan pesan error di status
         cameraStatus.textContent = errorMessage;
         cameraStatus.className = "camera-status error";
         
-        // Reset state
         readerDiv.style.display = "none";
         cameraActive = false;
         scannerButton.textContent = "📷 Aktifkan Kamera";
         
-        // Tampilkan alert hanya untuk error kritis
         if (err.toString().includes("NotAllowedError") || 
             err.toString().includes("NotFoundError") || 
             err.toString().includes("NotReadableError")) {
@@ -1321,7 +1350,6 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Data Stok Opname");
       
-      // Buat nama file dengan timestamp
       const date = new Date();
       const timestamp = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}_${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}`;
       const filename = `stok_opname_${timestamp}.xlsx`;
@@ -1346,19 +1374,17 @@
       }
       
       try {
-        // **PERUBAHAN UTAMA: Sekarang menyimpan ke tabel stok_barang**
         const dataToInsert = dataScan.map(item => ({
           user: item.user,
           lokasi: item.lokasi,
           barcode: item.barcode,
           nama: item.nama,
           qty: item.qty,
-          scanned_at: new Date().toISOString()  // Field timestamp
+          scanned_at: new Date().toISOString()
         }));
         
         console.log('Menyimpan data ke Supabase:', dataToInsert);
         
-        // Simpan ke tabel stok_barang
         const { data, error } = await supabaseClient
           .from('stok_barang')
           .insert(dataToInsert);
@@ -1370,7 +1396,6 @@
         
         alert(`✅ ${dataScan.length} data berhasil disimpan ke tabel stok_barang!`);
         
-        // Optional: Kosongkan data setelah disimpan
         if (confirm("Kosongkan data lokal setelah disimpan ke Supabase?")) {
           dataScan = [];
           saveDataToLocalStorage();
@@ -1395,29 +1420,25 @@
         saveDataToLocalStorage();
         updateTable();
         updateUploadedItemsTable();
-        alert("Semua data berhasil dihapus!");
+        alert("✅ Semua data berhasil dihapus!");
       }
     }
 
     // =============== SETUP EVENT LISTENERS ===============
     function setupEventListeners() {
-      // Tab menu
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
           const tabId = this.dataset.tab;
           
-          // Sembunyikan semua tab content
           document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
           });
           
-          // Tampilkan tab yang dipilih
           const selectedTab = document.getElementById(tabId);
           if (selectedTab) {
             selectedTab.classList.add('active');
           }
           
-          // Update tab menu
           document.querySelectorAll('.tab').forEach(tab => {
             tab.classList.remove('active');
           });
@@ -1425,7 +1446,6 @@
         });
       });
       
-      // Scan Tab
       document.getElementById('lockLokasiBtn')?.addEventListener('click', lockLokasi);
       document.getElementById('ubahLokasiBtn')?.addEventListener('click', ubahLokasi);
       document.getElementById('uploadFile')?.addEventListener('change', handleFileUpload);
@@ -1436,7 +1456,6 @@
       document.getElementById('scannerButton')?.addEventListener('click', toggleScanner);
       document.getElementById('tambahDataBtn')?.addEventListener('click', tambahData);
       
-      // Upload Tab
       document.getElementById('lockUploadLokasiBtn')?.addEventListener('click', lockUploadLokasi);
       document.getElementById('ubahUploadLokasiBtn')?.addEventListener('click', ubahUploadLokasi);
       document.getElementById('bulkUploadFile')?.addEventListener('change', handleBulkFileUpload);
@@ -1446,26 +1465,22 @@
       document.getElementById('saveUploadedDataBtn')?.addEventListener('click', saveUploadedData);
       document.getElementById('clearUploadedDataBtn')?.addEventListener('click', clearUploadedData);
       
-      // Main Buttons
       document.getElementById('exportDataBtn')?.addEventListener('click', exportToExcel);
       document.getElementById('showLocationDataBtn')?.addEventListener('click', showLocationDataModal);
       document.getElementById('saveToSupabaseBtn')?.addEventListener('click', saveToSupabase);
       document.getElementById('showSupabaseConfigBtn')?.addEventListener('click', showSupabaseConfig);
       document.getElementById('hapusSemuaDataBtn')?.addEventListener('click', hapusSemuaData);
       
-      // Supabase Modal
       document.getElementById('saveSupabaseConfigBtn')?.addEventListener('click', saveSupabaseConfig);
       document.getElementById('cancelSupabaseConfigBtn')?.addEventListener('click', () => {
         document.getElementById('supabaseModal').style.display = 'none';
       });
       
-      // Location Modal
       document.getElementById('loadLocationDataBtn')?.addEventListener('click', loadSelectedLocationData);
       document.getElementById('closeLocationModalBtn')?.addEventListener('click', () => {
         document.getElementById('locationModal').style.display = 'none';
       });
       
-      // Qty Modal
       document.getElementById('closeQtyModalBtn')?.addEventListener('click', () => {
         document.getElementById('qtyModal').style.display = 'none';
       });
@@ -1479,14 +1494,12 @@
       document.getElementById('selectAllCheckbox')?.addEventListener('change', selectAllItems);
       document.getElementById('saveQtyBtn')?.addEventListener('click', saveQtyToDataScan);
       
-      // Event listener untuk checkbox di tabel qty
       document.addEventListener('change', function(e) {
         if (e.target.classList.contains('item-checkbox')) {
           updateSelectedCount();
         }
       });
       
-      // Allow Enter key to add data
       document.getElementById('barcodeInput')?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -1501,17 +1514,14 @@
         }
       });
       
-      // Close modal when clicking outside
       window.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal')) {
           e.target.style.display = 'none';
         }
       });
       
-      // Handle page visibility change (tab switching)
       document.addEventListener('visibilitychange', function() {
         if (document.hidden && scanner && cameraActive) {
-          // Hentikan scanner saat tab tidak aktif
           scanner.stop().then(() => {
             cameraActive = false;
             scanner = null;
