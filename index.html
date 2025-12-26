@@ -130,12 +130,6 @@
       max-width: 600px;
     }
     
-    .camera-controls {
-      display: flex;
-      gap: 10px;
-      margin: 10px 0;
-    }
-    
     @media (max-width: 768px) {
       body { padding: 10px; }
       .button-group { flex-direction: column; }
@@ -270,10 +264,7 @@
     <label>Scan Barcode:</label>
     <input type="text" id="barcodeInput" placeholder="Scan barcode..." autofocus />
     
-    <div class="camera-controls">
-      <button id="scannerButton">📷 Aktifkan Kamera</button>
-      <button id="switchCameraBtn" style="display: none; background-color: #2196F3; color: white;">🔄 Ganti Kamera</button>
-    </div>
+    <button id="scannerButton">📷 Aktifkan Kamera</button>
     
     <div id="cameraStatus" class="camera-status inactive">Kamera tidak aktif</div>
     <div id="reader"></div>
@@ -360,9 +351,7 @@
     let uploadedItems = [];
     let supabaseClient = null;
     let isFetchingData = false;
-    let currentCameraId = null;
-    let cameras = [];
-    let isBackCamera = true;
+    let cameraActive = false; // Variabel untuk melacak status kamera
 
     // =============== FUNGSI INISIALISASI ===============
     function initApp() {
@@ -1217,193 +1206,108 @@
       }
     }
 
-    // =============== FUNGSI KAMERA YANG DIPERBAIKI ===============
+    // =============== FUNGSI KAMERA YANG SUDAH TERBUKTI BERHASIL ===============
     async function toggleScanner() {
       const scannerButton = document.getElementById("scannerButton");
       const cameraStatus = document.getElementById("cameraStatus");
       const readerDiv = document.getElementById("reader");
-      const switchCameraBtn = document.getElementById("switchCameraBtn");
       
-      if (!scanner) {
-        // Aktifkan scanner
-        scanner = new Html5Qrcode("reader");
-        
-        const qrCodeSuccessCallback = (decodedText) => {
-          console.log("Barcode terdeteksi:", decodedText);
-          document.getElementById("barcodeInput").value = decodedText;
-          handleBarcodeInput();
-          
-          // Auto-fokus ke qty input setelah scan
-          setTimeout(() => {
-            document.getElementById("qtyInput").focus();
-          }, 100);
-          
-          // Tidak menghentikan kamera setelah scan
-          // scanner.stop();
-        };
-        
-        const config = { 
-          fps: 10, 
-          qrbox: { width: 250, height: 250 },
-          rememberLastUsedCamera: true,
-          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-        };
-        
-        try {
-          // Dapatkan daftar kamera
-          const devices = await Html5Qrcode.getCameras();
-          cameras = devices;
-          
-          if (cameras.length === 0) {
-            throw new Error("Tidak ada kamera yang ditemukan");
-          }
-          
-          console.log("Kamera yang tersedia:", cameras);
-          
-          // Pilih kamera default (back camera di mobile, webcam di desktop)
-          let cameraId = null;
-          if (cameras.length > 1) {
-            // Coba cari kamera belakang untuk mobile
-            const backCamera = cameras.find(cam => 
-              cam.label.toLowerCase().includes('back') || 
-              cam.label.toLowerCase().includes('rear')
-            );
-            
-            if (backCamera) {
-              cameraId = backCamera.id;
-              isBackCamera = true;
-            } else {
-              cameraId = cameras[0].id;
-              isBackCamera = cameras[0].label.toLowerCase().includes('front') ? false : true;
-            }
-          } else {
-            cameraId = cameras[0].id;
-          }
-          
-          currentCameraId = cameraId;
-          
-          // Tampilkan tombol ganti kamera jika ada lebih dari 1
-          if (cameras.length > 1) {
-            switchCameraBtn.style.display = 'inline-block';
-          }
-          
-          // Mulai scanner
-          await scanner.start(
-            cameraId,
-            config,
-            qrCodeSuccessCallback,
-            (errorMessage) => {
-              // Error callback
-              console.log("Scan error:", errorMessage);
-            }
-          );
-          
-          // Update UI setelah berhasil
-          scannerButton.textContent = "⏹️ Matikan Kamera";
-          cameraStatus.textContent = "Kamera aktif";
-          cameraStatus.className = "camera-status active";
-          readerDiv.style.display = "block";
-          
-          // Auto-focus ke barcode input untuk keyboard input
-          document.getElementById("barcodeInput").focus();
-          
-        } catch (err) {
-          console.error("Scanner error:", err);
-          
-          // Coba dengan facingMode sebagai fallback
-          try {
-            await scanner.start(
-              { facingMode: isBackCamera ? "environment" : "user" },
-              config,
-              qrCodeSuccessCallback,
-              () => {}
-            );
-            
-            scannerButton.textContent = "⏹️ Matikan Kamera";
-            cameraStatus.textContent = "Kamera aktif (mode fallback)";
-            cameraStatus.className = "camera-status active";
-            readerDiv.style.display = "block";
-            switchCameraBtn.style.display = 'none'; // Nonaktifkan ganti kamera di mode fallback
-            
-          } catch (fallbackErr) {
-            console.error("Fallback juga gagal:", fallbackErr);
-            cameraStatus.textContent = "Gagal mengaktifkan kamera: " + err.message;
-            cameraStatus.className = "camera-status error";
-            scanner = null;
-            alert("Gagal mengaktifkan kamera. Pastikan izin kamera diberikan dan kamera tersedia.");
-          }
-        }
-      } else {
-        // Matikan scanner
+      // Hentikan scanner jika aktif
+      if (scanner && cameraActive) {
         try {
           await scanner.stop();
-          scanner = null;
-          currentCameraId = null;
-          
+          cameraActive = false;
+          readerDiv.style.display = "none";
+          readerDiv.innerHTML = "";
           scannerButton.textContent = "📷 Aktifkan Kamera";
           cameraStatus.textContent = "Kamera tidak aktif";
           cameraStatus.className = "camera-status inactive";
-          readerDiv.style.display = "none";
-          switchCameraBtn.style.display = 'none';
-          
-          // Fokus kembali ke input barcode
-          document.getElementById("barcodeInput").focus();
-          
-        } catch (err) {
-          console.error("Error stopping scanner:", err);
-          alert("Gagal mematikan kamera: " + err.message);
+          return;
+        } catch (error) {
+          console.error("Error stopping scanner:", error);
         }
       }
-    }
-
-    async function switchCamera() {
-      if (!scanner || cameras.length <= 1) return;
       
+      // Mulai scanner
+      readerDiv.style.display = "block";
+      readerDiv.innerHTML = "<div style='padding: 20px; text-align: center;'>Menginisialisasi kamera...</div>";
+
       try {
-        // Hentikan scanner saat ini
-        await scanner.stop();
-        
-        // Tentukan kamera berikutnya
-        let nextCameraIndex = 0;
-        for (let i = 0; i < cameras.length; i++) {
-          if (cameras[i].id === currentCameraId) {
-            nextCameraIndex = (i + 1) % cameras.length;
-            break;
-          }
-        }
-        
-        currentCameraId = cameras[nextCameraIndex].id;
-        isBackCamera = !cameras[nextCameraIndex].label.toLowerCase().includes('front');
-        
-        // Mulai scanner dengan kamera baru
-        const config = { 
-          fps: 10, 
-          qrbox: { width: 250, height: 250 }
-        };
-        
-        const qrCodeSuccessCallback = (decodedText) => {
-          console.log("Barcode terdeteksi:", decodedText);
-          document.getElementById("barcodeInput").value = decodedText;
-          handleBarcodeInput();
-          
-          setTimeout(() => {
-            document.getElementById("qtyInput").focus();
-          }, 100);
-        };
+        scanner = new Html5Qrcode("reader");
         
         await scanner.start(
-          currentCameraId,
-          config,
-          qrCodeSuccessCallback,
-          () => {}
+          { facingMode: "environment" },
+          { 
+            fps: 10, 
+            qrbox: { width: 250, height: 150 },
+            aspectRatio: 1.0
+          },
+          (decodedText) => {
+            console.log("Scanned:", decodedText);
+            document.getElementById("barcodeInput").value = decodedText;
+            
+            const nama = dataBarang[decodedText];
+            document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
+            
+            // Auto focus ke qty input
+            setTimeout(() => {
+              document.getElementById("qtyInput").focus();
+            }, 100);
+            
+            // Hentikan scanner setelah scan berhasil
+            scanner.stop().then(() => {
+              cameraActive = false;
+              readerDiv.innerHTML = "";
+              readerDiv.style.display = "none";
+              scannerButton.textContent = "📷 Aktifkan Kamera";
+              cameraStatus.textContent = "Kamera tidak aktif";
+              cameraStatus.className = "camera-status inactive";
+            }).catch(err => {
+              console.error("Error stopping scanner after scan:", err);
+            });
+          },
+          (errorMsg) => {
+            // Error callback - abaikan error "NotFoundException"
+            if (errorMsg && !errorMsg.includes("NotFoundException")) {
+              console.log("Scanning...", errorMsg);
+            }
+          }
         );
         
-        document.getElementById("cameraStatus").textContent = 
-          `Kamera aktif (${cameras[nextCameraIndex].label || 'Kamera ' + (nextCameraIndex + 1)})`;
-          
+        cameraActive = true;
+        scannerButton.textContent = "🛑 Matikan Kamera";
+        cameraStatus.textContent = "Kamera aktif - Arahkan ke barcode";
+        cameraStatus.className = "camera-status active";
+        
       } catch (err) {
-        console.error("Error switching camera:", err);
-        alert("Gagal mengganti kamera: " + err.message);
+        console.error("Error starting scanner:", err);
+        
+        let errorMessage = "Gagal membuka kamera: ";
+        if (err.toString().includes("NotAllowedError")) {
+          errorMessage = "Izin akses kamera ditolak. Silakan izinkan akses kamera di pengaturan browser.";
+        } else if (err.toString().includes("NotFoundError") || err.toString().includes("OverconstrainedError")) {
+          errorMessage = "Kamera tidak ditemukan. Pastikan kamera tersedia dan tidak digunakan aplikasi lain.";
+        } else if (err.toString().includes("NotReadableError")) {
+          errorMessage = "Kamera sedang digunakan oleh aplikasi lain. Tutup aplikasi lain yang menggunakan kamera.";
+        } else {
+          errorMessage += err.toString();
+        }
+        
+        // Tampilkan pesan error di status
+        cameraStatus.textContent = errorMessage;
+        cameraStatus.className = "camera-status error";
+        
+        // Reset state
+        readerDiv.style.display = "none";
+        cameraActive = false;
+        scannerButton.textContent = "📷 Aktifkan Kamera";
+        
+        // Tampilkan alert hanya untuk error kritis
+        if (err.toString().includes("NotAllowedError") || 
+            err.toString().includes("NotFoundError") || 
+            err.toString().includes("NotReadableError")) {
+          alert(errorMessage);
+        }
       }
     }
 
@@ -1520,7 +1424,6 @@
       });
       document.getElementById('barcodeInput')?.addEventListener('input', handleBarcodeInput);
       document.getElementById('scannerButton')?.addEventListener('click', toggleScanner);
-      document.getElementById('switchCameraBtn')?.addEventListener('click', switchCamera);
       document.getElementById('tambahDataBtn')?.addEventListener('click', tambahData);
       
       // Upload Tab
@@ -1597,15 +1500,16 @@
       
       // Handle page visibility change (tab switching)
       document.addEventListener('visibilitychange', function() {
-        if (document.hidden && scanner) {
+        if (document.hidden && scanner && cameraActive) {
           // Hentikan scanner saat tab tidak aktif
           scanner.stop().then(() => {
+            cameraActive = false;
             scanner = null;
             document.getElementById("scannerButton").textContent = "📷 Aktifkan Kamera";
             document.getElementById("cameraStatus").textContent = "Kamera tidak aktif";
             document.getElementById("cameraStatus").className = "camera-status inactive";
             document.getElementById("reader").style.display = "none";
-            document.getElementById("switchCameraBtn").style.display = 'none';
+            document.getElementById("reader").innerHTML = "";
           }).catch(console.error);
         }
       });
