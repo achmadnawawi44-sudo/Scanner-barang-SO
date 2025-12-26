@@ -2,196 +2,28 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scanner Stok Barang</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* Mobile First CSS */
-    * {
-      box-sizing: border-box;
-    }
-    
-    body { 
-      font-family: Arial, sans-serif; 
-      padding: 15px; 
-      background: #f8f8f8; 
-      margin: 0;
-      font-size: 16px;
-    }
-    
-    h2 {
-      font-size: 1.4rem;
-      margin: 10px 0;
-      color: #333;
-    }
-    
-    h3 {
-      font-size: 1.2rem;
-      margin: 8px 0;
-    }
-    
-    label { 
-      font-weight: bold; 
-      margin-top: 12px; 
-      display: block;
-      font-size: 15px;
-    }
-    
-    input, select, textarea { 
-      width: 100%; 
-      padding: 12px; 
-      margin: 5px 0 15px 0; 
-      border: 1px solid #ddd; 
-      border-radius: 6px; 
-      font-size: 16px; /* Mencegah zoom di iOS */
-      background: white;
-    }
-    
-    button { 
-      width: 100%; 
-      padding: 14px; 
-      margin: 8px 0; 
-      border: none; 
-      border-radius: 6px; 
-      font-size: 16px; 
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    button:active {
-      transform: scale(0.98);
-    }
-    
-    .lokasi-buttons { 
-      display: flex; 
-      gap: 10px; 
-      margin: 10px 0; 
-    }
-    
-    .lokasi-buttons button {
-      flex: 1;
-      padding: 12px;
-    }
-    
-    .button-group { 
-      display: flex; 
-      flex-direction: column;
-      gap: 10px; 
-      margin-top: 20px; 
-    }
-    
-    .button-group button { 
-      margin: 0;
-    }
-    
-    #reader { 
-      width: 100%; 
-      max-width: 100%; 
-      margin: 15px 0; 
-      display: none;
-      border-radius: 8px;
-      overflow: hidden;
-      position: relative;
-      min-height: 300px;
-      background: #000;
-    }
-    
-    /* Styling untuk area scan */
-    #reader__scan_region {
-      width: 100% !important;
-    }
-    
-    #reader__dashboard {
-      padding: 10px;
-      background: rgba(0,0,0,0.8);
-      color: white;
-    }
-    
-    #html5-qrcode-anchor-scan-type-change {
-      color: #4CAF50 !important;
-      font-weight: bold;
-    }
-    
-    .camera-controls {
-      display: flex;
-      gap: 10px;
-      margin: 10px 0;
-    }
-    
-    .camera-controls button {
-      flex: 1;
-      padding: 10px;
-      font-size: 14px;
-    }
-    
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-      margin: 15px 0; 
-      font-size: 14px;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    th, td { 
-      padding: 12px 8px; 
-      text-align: left; 
-      border-bottom: 1px solid #eee; 
-    }
-    
-    th { 
-      background-color: #4CAF50; 
-      color: white; 
-      font-weight: bold;
-      position: sticky;
-      top: 0;
-    }
-    
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-    
-    tr:hover {
-      background-color: #f5f5f5;
-    }
-    
-    .tab-container { 
-      display: flex; 
-      margin: 15px 0; 
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .tab { 
-      flex: 1; 
-      padding: 15px; 
-      text-align: center; 
-      background: #ddd; 
-      cursor: pointer; 
-      font-weight: bold;
-      font-size: 15px;
-      border: none;
-    }
-    
-    .tab.active { 
-      background: #4CAF50; 
-      color: white; 
-    }
-    
-    .tab-content { 
-      display: none; 
-      padding: 15px 0;
-    }
-    
-    .tab-content.active { 
-      display: block; 
-    }
+    body { font-family: Arial; padding: 20px; background: #f8f8f8; }
+    label, input, button { margin: 5px 0; display: block; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
+    .lokasi-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
+    #reader { width: 100%; max-width: 400px; margin: 10px 0; display: none; }
+    #reader video { width: 100%; border-radius: 8px; }
+    .button-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .button-group button { flex: 1; min-width: 120px; }
+    #uploadedItemsTable { margin-top: 20px; }
+    .tab-container { display: flex; margin-bottom: 10px; }
+    .tab { padding: 10px 15px; cursor: pointer; background: #ddd; border-radius: 5px 5px 0 0; }
+    .tab.active { background: #fff; border-bottom: 2px solid #4CAF50; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
     
     .modal {
       display: none;
@@ -201,446 +33,133 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0,0,0,0.7);
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      background-color: rgba(0,0,0,0.5);
     }
-    
     .modal-content {
-      background-color: white;
-      margin: 20px auto;
-      padding: 25px;
-      width: 95%;
-      max-width: 100%;
-      border-radius: 12px;
-      position: relative;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 5px;
+      text-align: center;
     }
-    
-    .modal-content.long {
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    
     .modal-buttons {
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       gap: 10px;
       margin-top: 20px;
     }
     
     .user-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 12px;
-      margin: 15px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
     }
-    
     .user-button {
-      padding: 15px 10px;
+      padding: 8px 12px;
       background: #e0e0e0;
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
-      text-align: center;
-      word-break: break-word;
     }
-    
     .user-button.active {
       background: #4CAF50;
       color: white;
-      box-shadow: 0 3px 6px rgba(76, 175, 80, 0.3);
     }
     
     .camera-status {
-      margin: 15px 0;
-      padding: 12px;
-      border-radius: 8px;
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 4px;
       text-align: center;
       font-weight: bold;
     }
-    
     .camera-status.active {
       background: #d4edda;
       color: #155724;
-      border: 2px solid #155724;
+      border: 2px solid #c3e6cb;
     }
-    
     .camera-status.inactive {
       background: #f8d7da;
       color: #721c24;
-      border: 2px solid #721c24;
+      border: 2px solid #f5c6cb;
+    }
+    .camera-status.error {
+      background: #fff3cd;
+      color: #856404;
+      border: 2px solid #ffeaa7;
     }
     
     .progress-bar-container {
       width: 100%;
       background-color: #f0f0f0;
-      border-radius: 10px;
-      margin: 20px 0;
+      border-radius: 5px;
+      margin: 10px 0;
       display: none;
-      overflow: hidden;
     }
-    
     .progress-bar {
       width: 0%;
-      height: 30px;
-      background: linear-gradient(90deg, #4CAF50, #45a049);
-      border-radius: 10px;
+      height: 20px;
+      background-color: #4CAF50;
+      border-radius: 5px;
       text-align: center;
       color: white;
-      line-height: 30px;
-      font-weight: bold;
-      font-size: 16px;
+      line-height: 20px;
       transition: width 0.3s ease;
     }
     
-    #supabaseStatus {
-      margin: 15px 0;
-      padding: 12px;
-      border-radius: 8px;
-      display: none;
-      font-size: 15px;
-      font-weight: bold;
-      text-align: center;
-    }
-    
-    hr {
+    button {
+      cursor: pointer;
+      padding: 8px 16px;
       border: none;
-      height: 2px;
-      background: #eee;
-      margin: 20px 0;
-    }
-    
-    /* Responsive Table */
-    @media (max-width: 768px) {
-      table {
-        font-size: 13px;
-      }
-      
-      th, td {
-        padding: 10px 6px;
-      }
-      
-      .button-group button {
-        padding: 12px;
-        font-size: 15px;
-      }
-      
-      .modal-content {
-        width: 98%;
-        margin: 10px auto;
-        padding: 20px;
-      }
-      
-      .user-list {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      }
-    }
-    
-    /* Untuk layar sangat kecil */
-    @media (max-width: 480px) {
-      body {
-        padding: 10px;
-      }
-      
-      h2 {
-        font-size: 1.2rem;
-      }
-      
-      button {
-        padding: 12px;
-        font-size: 15px;
-      }
-      
-      .tab {
-        padding: 12px;
-        font-size: 14px;
-      }
-      
-      .user-list {
-        grid-template-columns: 1fr;
-      }
-      
-      .user-button {
-        padding: 15px;
-      }
-    }
-    
-    /* Scrollbar styling untuk mobile */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 3px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-    
-    /* Loading spinner */
-    .loading-spinner {
-      display: none;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #4CAF50;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    /* Item checkbox styling */
-    .item-checkbox {
-      width: 22px;
-      height: 22px;
-      margin: 0;
-    }
-    
-    /* Status colors */
-    .status-success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    
-    .status-error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    
-    .status-warning {
-      background-color: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeaa7;
-    }
-    
-    /* File upload button */
-    input[type="file"] {
-      padding: 10px;
-      background: white;
-    }
-    
-    /* Logo */
-    img[alt="Logo Perusahaan"] {
-      max-width: 120px;
-      height: auto;
-      display: block;
-      margin: 0 auto 15px auto;
-    }
-    
-    /* Location items table dalam modal */
-    #locationItemsTable {
+      border-radius: 4px;
       font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
     }
     
-    #locationItemsTable th,
-    #locationItemsTable td {
-      padding: 10px;
-      vertical-align: middle;
+    .modal-content.long {
+      max-height: 80vh;
+      overflow-y: auto;
+      max-width: 600px;
     }
     
-    #locationItemsTable input[type="number"] {
-      width: 70px;
-      padding: 8px;
-      font-size: 14px;
-    }
-    
-    /* Mobile action buttons */
-    .action-buttons {
-      display: flex;
-      gap: 5px;
-    }
-    
-    .action-buttons button {
-      padding: 6px 10px;
-      font-size: 13px;
-      flex: 1;
-    }
-    
-    /* Hide scrollbar on mobile when not needed */
-    .hide-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    
-    .hide-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    
-    /* Camera overlay */
-    .camera-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-    
-    .scan-region {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 70%;
-      height: 200px;
-      border: 3px solid #4CAF50;
-      border-radius: 10px;
-      box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
-    }
-    
-    .scan-line {
-      position: absolute;
-      top: 20%;
-      left: 10%;
-      width: 80%;
-      height: 4px;
-      background: #4CAF50;
-      animation: scan 2s linear infinite;
-      border-radius: 2px;
-    }
-    
-    @keyframes scan {
-      0% { top: 20%; }
-      50% { top: 80%; }
-      100% { top: 20%; }
-    }
-    
-    /* Camera selector */
-    .camera-selector {
-      margin: 10px 0;
-      display: none;
-    }
-    
-    .camera-selector select {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 2px solid #4CAF50;
-      background: white;
-      font-size: 14px;
-    }
-    
-    /* Scanner instructions */
-    .scanner-instructions {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 10px 0;
-      border-left: 4px solid #4CAF50;
-      font-size: 14px;
-    }
-    
-    .scanner-instructions ul {
-      margin: 10px 0;
-      padding-left: 20px;
-    }
-    
-    .scanner-instructions li {
-      margin-bottom: 8px;
-    }
-    
-    /* Success feedback */
-    .scan-success {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(76, 175, 80, 0.9);
-      color: white;
-      padding: 20px;
-      border-radius: 10px;
-      z-index: 10000;
-      font-weight: bold;
-      font-size: 18px;
-      display: none;
-      animation: fadeInOut 2s ease-in-out;
-    }
-    
-    @keyframes fadeInOut {
-      0% { opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-    
-    /* Flash effect */
-    .flash {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: white;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 9999;
-      animation: flashEffect 0.5s;
-    }
-    
-    @keyframes flashEffect {
-      0% { opacity: 0; }
-      50% { opacity: 0.8; }
-      100% { opacity: 0; }
-    }
-    
-    /* Scanner buttons container */
-    .scanner-buttons {
+    .camera-controls {
       display: flex;
       gap: 10px;
-      margin-top: 10px;
+      margin: 10px 0;
     }
     
-    .scanner-buttons button {
-      flex: 1;
-      padding: 12px;
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      .button-group { flex-direction: column; }
+      .button-group button { width: 100%; }
+      .lokasi-buttons { flex-direction: column; }
+      #reader { max-width: 100%; }
     }
   </style>
 </head>
 <body>
-  <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/main/goto.png" alt="Logo Perusahaan">
+  <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
   <h2>Scanner Stok Opname Goto Living</h2>
-  
-  <!-- Status Koneksi Supabase -->
-  <div id="supabaseStatus"></div>
-  
-  <!-- Flash effect untuk scan sukses -->
-  <div class="flash" id="flashEffect"></div>
-  
-  <!-- Feedback scan sukses -->
-  <div class="scan-success" id="scanSuccess">
-    <div style="text-align: center;">
-      <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
-      <div>Barcode berhasil discan!</div>
-    </div>
-  </div>
-  
+
   <!-- Modal Supabase Settings -->
   <div id="supabaseModal" class="modal">
     <div class="modal-content">
-      <h3>⚙️ Konfigurasi Supabase</h3>
+      <h3>Konfigurasi Supabase</h3>
       <p>Masukkan kredensial Supabase Anda:</p>
       <label>URL Supabase:</label>
       <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co" />
       <label>API Key:</label>
       <input type="password" id="supabaseKey" placeholder="Your API Key" />
       <div class="modal-buttons">
-        <button id="saveSupabaseConfigBtn" style="background-color: #4CAF50; color: white;">Simpan Konfigurasi</button>
+        <button id="saveSupabaseConfigBtn" style="background-color: #4CAF50; color: white;">Simpan</button>
         <button id="cancelSupabaseConfigBtn" style="background-color: #f44336; color: white;">Batal</button>
       </div>
     </div>
@@ -649,37 +168,35 @@
   <!-- Modal Pilih Lokasi -->
   <div id="locationModal" class="modal">
     <div class="modal-content long">
-      <h3>📍 Ambil Data per Lokasi</h3>
-      <p><strong>Pilih lokasi untuk mengambil data dan mengisi qty:</strong></p>
+      <h3>Ambil Data per Lokasi</h3>
+      <p>Pilih lokasi untuk mengambil data dan mengisi qty:</p>
+      
+      <div id="locationList" class="user-list">
+        <!-- Lokasi akan dimuat di sini -->
+      </div>
       
       <div style="margin: 15px 0;">
-        <label>Cari Lokasi:</label>
-        <input type="text" id="filterLocation" placeholder="🔍 Ketik nama lokasi..." style="width: 100%; padding: 12px; font-size: 16px;" />
+        <label>Filter Lokasi:</label>
+        <input type="text" id="filterLocation" placeholder="Cari lokasi..." style="width: 100%; padding: 8px; margin-top: 5px;" />
       </div>
       
       <div id="progressBarContainer" class="progress-bar-container">
         <div class="progress-bar" id="progressBar">0%</div>
       </div>
       
-      <div id="loadingStatus" style="margin: 15px 0; padding: 15px; text-align: center; display: none; background: #f8f9fa; border-radius: 8px;">
-        <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">🔄 Memuat data...</div>
-        <div id="loadingDetails" style="font-size: 14px; color: #666;"></div>
+      <div id="loadingStatus" style="margin: 10px 0; padding: 10px; text-align: center; display: none;">
+        <div>Memuat data...</div>
+        <div id="loadingDetails" style="font-size: 12px; color: #666;"></div>
       </div>
       
-      <div id="locationList" class="user-list">
-        <!-- Lokasi akan dimuat di sini -->
-      </div>
-      
-      <div id="locationDataInfo" style="margin: 20px 0; padding: 15px; background: #e8f5e8; border-radius: 8px; display: none; border-left: 5px solid #4CAF50;">
-        <div id="selectedLocationInfo" style="font-size: 16px; font-weight: bold; color: #155724;"></div>
-        <div id="locationItemCount" style="font-size: 14px; color: #388e3c; margin-top: 5px;"></div>
+      <div id="locationDataInfo" style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px; display: none;">
+        <div id="selectedLocationInfo"></div>
+        <div id="locationItemCount" style="font-size: 12px; color: #666;"></div>
       </div>
       
       <div class="modal-buttons">
-        <button id="loadLocationDataBtn" style="background-color: #4CAF50; color: white; display: none; padding: 16px; font-size: 16px; font-weight: bold;">
-          📥 MUAT DATA LOKASI INI
-        </button>
-        <button id="closeLocationModalBtn" style="background-color: #6c757d; color: white; padding: 16px; font-size: 16px;">Tutup</button>
+        <button id="loadLocationDataBtn" style="background-color: #4CAF50; color: white; display: none;">Muat Data</button>
+        <button id="closeLocationModalBtn" style="background-color: #f44336; color: white;">Tutup</button>
       </div>
     </div>
   </div>
@@ -687,27 +204,25 @@
   <!-- Modal Isi Qty per Item -->
   <div id="qtyModal" class="modal">
     <div class="modal-content long">
-      <h3>📝 Isi Qty untuk <span id="modalLocationName" style="color: #4CAF50;"></span></h3>
+      <h3>Isi Qty untuk <span id="modalLocationName"></span></h3>
       
-      <div style="margin-bottom: 20px; padding: 15px; background: #f0f7ff; border-radius: 8px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div id="currentLocationInfo" style="font-size: 16px; font-weight: bold;"></div>
-          <button id="selectAllBtn" style="background-color: #2196F3; color: white; padding: 12px 16px; font-size: 15px; border-radius: 6px;">
-            📋 Pilih Semua
-          </button>
+      <div style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <div id="currentLocationInfo"></div>
+          <button id="selectAllBtn" style="background-color: #2196F3; color: white; padding: 5px 10px;">Pilih Semua</button>
         </div>
       </div>
       
-      <div style="max-height: 60vh; overflow-y: auto; border: 2px solid #e0e0e0; border-radius: 10px; padding: 10px; background: white;">
-        <table id="locationItemsTable" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+      <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
+        <table id="locationItemsTable" style="width: 100%; border-collapse: collapse;">
           <thead>
-            <tr style="background-color: #4CAF50; color: white;">
-              <th style="padding: 15px 10px; border-bottom: 2px solid #388e3c; width: 60px; text-align: center;">
-                <input type="checkbox" id="selectAllCheckbox" style="width: 20px; height: 20px;" />
+            <tr style="background-color: #f5f5f5; position: sticky; top: 0;">
+              <th style="padding: 8px; border-bottom: 2px solid #ddd; width: 50px;">
+                <input type="checkbox" id="selectAllCheckbox" />
               </th>
-              <th style="padding: 15px 10px; border-bottom: 2px solid #388e3c; font-size: 15px;">Nama Barang</th>
-              <th style="padding: 15px 10px; border-bottom: 2px solid #388e3c; font-size: 15px;">Barcode</th>
-              <th style="padding: 15px 10px; border-bottom: 2px solid #388e3c; width: 100px; font-size: 15px;">Qty</th>
+              <th style="padding: 8px; border-bottom: 2px solid #ddd;">Nama</th>
+              <th style="padding: 8px; border-bottom: 2px solid #ddd;">Barcode</th>
+              <th style="padding: 8px; border-bottom: 2px solid #ddd; width: 120px;">Qty</th>
             </tr>
           </thead>
           <tbody id="locationItemsBody">
@@ -716,13 +231,11 @@
         </table>
       </div>
       
-      <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-        <div id="selectedCount" style="font-size: 16px; color: #333; margin-bottom: 15px; text-align: center; font-weight: bold;"></div>
+      <div style="margin-top: 15px; text-align: center;">
+        <div id="selectedCount" style="font-size: 14px; color: #666; margin-bottom: 10px;"></div>
         <div class="modal-buttons">
-          <button id="saveQtyBtn" style="background-color: #4CAF50; color: white; padding: 16px; font-size: 16px; font-weight: bold;">
-            💾 SIMPAN KE DATA SCAN
-          </button>
-          <button id="closeQtyModalBtn" style="background-color: #6c757d; color: white; padding: 16px; font-size: 16px;">Batal</button>
+          <button id="saveQtyBtn" style="background-color: #4CAF50; color: white;">Simpan ke Data Scan</button>
+          <button id="closeQtyModalBtn" style="background-color: #f44336; color: white;">Batal</button>
         </div>
       </div>
     </div>
@@ -730,147 +243,111 @@
 
   <!-- Tab Container -->
   <div class="tab-container">
-    <div class="tab active" data-tab="scanTab">📱 Mode Scan</div>
-    <div class="tab" data-tab="uploadTab">📤 Mode Upload</div>
+    <div class="tab active" data-tab="scanTab">Mode Scan</div>
+    <div class="tab" data-tab="uploadTab">Mode Upload Data</div>
   </div>
 
   <!-- Scan Tab -->
   <div id="scanTab" class="tab-content active">
-    <label>👤 User:</label>
+    <label>User:</label>
     <input type="text" id="userInput" placeholder="Nama user" value="User 1" />
     
-    <label>📍 Nama Lokasi:</label>
+    <label>Nama Lokasi:</label>
     <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
     <div class="lokasi-buttons">
-      <button id="lockLokasiBtn" style="background-color: #4CAF50; color: white;">🔒 Kunci Lokasi</button>
-      <button id="ubahLokasiBtn" style="background-color: #2196F3; color: white;">🔓 Ubah Lokasi</button>
+      <button id="lockLokasiBtn">🔒Kunci Lokasi</button>
+      <button id="ubahLokasiBtn">🔓Ubah Lokasi</button>
     </div>
 
     <hr>
 
-    <label>📂 Upload File Data Barang (CSV/XLSX):</label>
+    <label>📤Upload File Data Barang (CSV/XLSX):</label>
     <input type="file" id="uploadFile" accept=".csv, .xlsx" />
-    <button id="uploadFileBtn" style="background-color: #ff9800; color: white;">📤 Upload File</button>
+    <button id="uploadFileBtn">Upload</button>
 
     <hr>
 
-    <label>📷 Scan Barcode:</label>
-    <input type="text" id="barcodeInput" placeholder="Scan barcode di sini..." autofocus />
+    <label>Scan Barcode:</label>
+    <input type="text" id="barcodeInput" placeholder="Scan barcode..." autofocus />
     
-    <!-- Scanner Instructions -->
-    <div class="scanner-instructions">
-      <strong>📋 Cara menggunakan scanner:</strong>
-      <ul>
-        <li>Klik tombol "📷 Aktifkan Kamera Scanner"</li>
-        <li>Arahkan kamera ke barcode</li>
-        <li>Pastikan barcode berada dalam area kotak hijau</li>
-        <li>Scanner akan otomatis membaca barcode</li>
-        <li>Klik "⏹️ Matikan Kamera" untuk menonaktifkan</li>
-      </ul>
+    <div class="camera-controls">
+      <button id="scannerButton">📷 Aktifkan Kamera</button>
+      <button id="switchCameraBtn" style="display: none; background-color: #2196F3; color: white;">🔄 Ganti Kamera</button>
     </div>
     
-    <!-- Camera Selector -->
-    <div class="camera-selector" id="cameraSelector">
-      <label>Pilih Kamera:</label>
-      <select id="cameraSelect">
-        <option value="">Mencari kamera...</option>
-      </select>
-    </div>
-    
-    <!-- Camera Controls -->
-    <div class="scanner-buttons">
-      <button id="scannerButton" style="background-color: #9C27B0; color: white; flex: 2;">📷 Aktifkan Kamera Scanner</button>
-      <button id="stopScannerButton" style="background-color: #f44336; color: white; display: none; flex: 1;">⏹️ Matikan</button>
-    </div>
-    
-    <div id="cameraStatus" class="camera-status inactive">📵 Kamera tidak aktif</div>
-    
-    <!-- Camera Container -->
+    <div id="cameraStatus" class="camera-status inactive">Kamera tidak aktif</div>
     <div id="reader"></div>
-    
-    <!-- Manual Input -->
-    <div style="margin-top: 20px; padding: 15px; background: #f0f7ff; border-radius: 8px;">
-      <label style="color: #2196F3;">📝 Atau masukkan manual:</label>
-      <input type="text" id="manualBarcodeInput" placeholder="Masukkan barcode manual..." style="margin-top: 5px;" />
-      <button id="manualAddBtn" style="background-color: #2196F3; color: white; margin-top: 10px;">➕ Tambah Manual</button>
-    </div>
-    
-    <hr>
 
-    <label>📦 Nama Barang:</label>
-    <input type="text" id="namaBarangInput" disabled style="background-color: #f5f5f5;" />
-    <label>🔢 Quantity (Qty):</label>
-    <input type="number" id="qtyInput" placeholder="Masukkan jumlah..." min="1" value="1" />
-    <button id="tambahDataBtn" style="background-color: #4CAF50; color: white; font-size: 17px; padding: 16px;">➕ TAMBAH DATA</button>
+    <label>Nama:</label>
+    <input type="text" id="namaBarangInput" disabled />
+    <label>Qty:</label>
+    <input type="number" id="qtyInput" placeholder="Jumlah..." />
+    <button id="tambahDataBtn">Tambah</button>
 
     <hr>
 
-    <h3>📊 Data Stok Barang:</h3>
-    <div style="overflow-x: auto;">
-      <table id="dataTable">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Lokasi</th>
-            <th>Barcode</th>
-            <th>Nama</th>
-            <th>Qty</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <h3>Data Stok Barang:</h3>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Lokasi</th>
+          <th>Barcode</th>
+          <th>Nama</th>
+          <th>Qty</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <!-- Upload Data Tab -->
   <div id="uploadTab" class="tab-content">
-    <label>👤 User:</label>
+    <label>User:</label>
     <input type="text" id="uploadUserInput" placeholder="Nama user" value="User 1" />
     
-    <label>📍 Nama Lokasi:</label>
+    <label>Nama Lokasi:</label>
     <input type="text" id="uploadLokasiInput" placeholder="Contoh: Area A" />
     <div class="lokasi-buttons">
-      <button id="lockUploadLokasiBtn" style="background-color: #4CAF50; color: white;">🔒 Kunci Lokasi</button>
-      <button id="ubahUploadLokasiBtn" style="background-color: #2196F3; color: white;">🔓 Ubah Lokasi</button>
+      <button id="lockUploadLokasiBtn">🔒Kunci Lokasi</button>
+      <button id="ubahUploadLokasiBtn">🔓Ubah Lokasi</button>
     </div>
 
     <hr>
 
-    <label>📂 Upload File Data Barang (CSV/XLSX):</label>
+    <label>📤Upload File Data Barang (CSV/XLSX):</label>
     <input type="file" id="bulkUploadFile" accept=".csv, .xlsx" />
-    <button id="bulkUploadBtn" style="background-color: #ff9800; color: white;">📤 Upload Data Sekaligus</button>
+    <button id="bulkUploadBtn">Upload Data</button>
 
     <hr>
 
-    <h3>📋 Data yang Diupload:</h3>
-    <div style="overflow-x: auto;">
-      <table id="uploadedItemsTable">
-        <thead>
-          <tr>
-            <th>Barcode</th>
-            <th>Nama</th>
-            <th>Qty</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="uploadedItemsBody"></tbody>
-      </table>
-    </div>
+    <h3>Data yang Diupload:</h3>
+    <table id="uploadedItemsTable">
+      <thead>
+        <tr>
+          <th>Barcode</th>
+          <th>Nama</th>
+          <th>Qty</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="uploadedItemsBody"></tbody>
+    </table>
 
     <div class="button-group" style="margin-top: 20px;">
-      <button id="saveUploadedDataBtn" style="background-color: #4CAF50; color: white;">💾 Simpan ke Data Scan</button>
-      <button id="clearUploadedDataBtn" style="background-color: #f44336; color: white;">🗑️ Hapus Data</button>
+      <button id="saveUploadedDataBtn" style="background-color: #4CAF50; color: white;">Simpan Data</button>
+      <button id="clearUploadedDataBtn" style="background-color: #f44336; color: white;">Hapus Data</button>
     </div>
   </div>
 
   <!-- Main Buttons -->
   <div class="button-group">
-    <button id="exportDataBtn" style="background-color: #2196F3; color: white;">📥 Download Excel</button>
-    <button id="showLocationDataBtn" style="background-color: #10b981; color: white;">📍 Ambil Data per Lokasi</button>
-    <button id="saveToSupabaseBtn" style="background-color: #3b82f6; color: white;">☁️ Simpan ke Supabase</button>
-    <button id="showSupabaseConfigBtn" style="background-color: #6b7280; color: white;">⚙️ Supabase Settings</button>
-    <button id="hapusSemuaDataBtn" style="background-color: #dc2626; color: white;">🗑️ Hapus Semua Data</button>
+    <button id="exportDataBtn">Download Data (Excel)</button>
+    <button id="showLocationDataBtn" style="background-color: #10b981; color: white;">Ambil Data per Lokasi</button>
+    <button id="saveToSupabaseBtn" style="background-color: #3b82f6; color: white;">Simpan ke Supabase</button>
+    <button id="showSupabaseConfigBtn" style="background-color: #6b7280; color: white;">Supabase Settings</button>
+    <button id="hapusSemuaDataBtn" style="background-color: red; color: white;">Hapus Semua Data</button>
   </div>
 
   <script>
@@ -883,9 +360,9 @@
     let uploadedItems = [];
     let supabaseClient = null;
     let isFetchingData = false;
-    let isCameraActive = false;
-    let availableCameras = [];
-    let selectedCameraId = null;
+    let currentCameraId = null;
+    let cameras = [];
+    let isBackCamera = true;
 
     // =============== FUNGSI INISIALISASI ===============
     function initApp() {
@@ -921,11 +398,6 @@
       // Setup event listeners
       setupEventListeners();
       
-      // Update status Supabase
-      setTimeout(() => {
-        updateSupabaseStatus();
-      }, 1000);
-      
       // Fokus ke input barcode
       setTimeout(() => {
         const barcodeInput = document.getElementById("barcodeInput");
@@ -933,436 +405,6 @@
       }, 500);
       
       console.log('App initialized successfully');
-      
-      // Adjust UI for mobile
-      adjustForMobile();
-      
-      // Request permission untuk kamera (hints browser)
-      requestCameraPermission();
-    }
-
-    // Fungsi untuk request camera permission (hints)
-    function requestCameraPermission() {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then(function(stream) {
-            // Permission granted, stop semua track
-            stream.getTracks().forEach(track => track.stop());
-            console.log("Camera permission already granted");
-          })
-          .catch(function(err) {
-            console.log("Camera permission not yet granted:", err.name);
-          });
-      }
-    }
-
-    // Fungsi untuk adjust UI untuk mobile
-    function adjustForMobile() {
-      // Perbaiki tinggi modal untuk mobile
-      const modals = document.querySelectorAll('.modal-content.long');
-      modals.forEach(modal => {
-        if (window.innerHeight < 700) {
-          modal.style.maxHeight = '85vh';
-        }
-      });
-      
-      // Perbaiki font size untuk mobile kecil
-      if (window.innerWidth < 400) {
-        document.querySelectorAll('button').forEach(btn => {
-          btn.style.fontSize = '14px';
-          btn.style.padding = '12px 8px';
-        });
-        
-        document.querySelectorAll('input, select').forEach(input => {
-          input.style.fontSize = '14px';
-          input.style.padding = '10px';
-        });
-      }
-    }
-
-    // =============== FUNGSI KAMERA & SCANNER ===============
-    // Fungsi untuk mendapatkan daftar kamera
-    async function getCameras() {
-      try {
-        const devices = await Html5Qrcode.getCameras();
-        availableCameras = devices;
-        
-        const cameraSelect = document.getElementById('cameraSelect');
-        cameraSelect.innerHTML = '';
-        
-        if (devices.length === 0) {
-          cameraSelect.innerHTML = '<option value="">Tidak ada kamera ditemukan</option>';
-          return;
-        }
-        
-        // Tambahkan opsi untuk setiap kamera
-        devices.forEach((device, index) => {
-          const option = document.createElement('option');
-          option.value = device.id;
-          option.text = device.label || `Kamera ${index + 1}`;
-          cameraSelect.appendChild(option);
-        });
-        
-        // Pilih kamera belakang jika ada
-        const backCamera = devices.find(device => 
-          device.label.toLowerCase().includes('back') || 
-          device.label.toLowerCase().includes('rear')
-        );
-        
-        if (backCamera) {
-          selectedCameraId = backCamera.id;
-          cameraSelect.value = backCamera.id;
-        } else if (devices.length > 0) {
-          selectedCameraId = devices[0].id;
-          cameraSelect.value = devices[0].id;
-        }
-        
-        // Tampilkan selector kamera
-        document.getElementById('cameraSelector').style.display = 'block';
-        
-      } catch (error) {
-        console.error("Error getting cameras:", error);
-        document.getElementById('cameraSelector').style.display = 'none';
-      }
-    }
-
-    // Fungsi untuk memulai scanner
-    async function startScanner() {
-      if (isCameraActive) {
-        alert("Kamera sudah aktif!");
-        return;
-      }
-      
-      const cameraStatus = document.getElementById("cameraStatus");
-      const scannerButton = document.getElementById("scannerButton");
-      const stopScannerButton = document.getElementById("stopScannerButton");
-      const readerDiv = document.getElementById("reader");
-      const cameraSelect = document.getElementById('cameraSelect');
-      
-      try {
-        // Update UI
-        scannerButton.textContent = "🔄 Memulai Kamera...";
-        scannerButton.disabled = true;
-        cameraStatus.textContent = "🔄 Memulai kamera...";
-        cameraStatus.className = "camera-status";
-        
-        // Dapatkan ID kamera yang dipilih
-        const cameraId = cameraSelect.value || selectedCameraId;
-        
-        if (!cameraId) {
-          throw new Error("Tidak ada kamera yang dipilih");
-        }
-        
-        // Inisialisasi scanner
-        scanner = new Html5Qrcode("reader");
-        
-        // Konfigurasi scanner
-        const config = {
-          fps: 10,
-          qrbox: { 
-            width: 250, 
-            height: 150,
-            widthFromDevice: true
-          },
-          aspectRatio: 1.0,
-          disableFlip: false
-        };
-        
-        // Fungsi callback saat scan berhasil
-        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-          console.log("Scan berhasil:", decodedText);
-          
-          // Tampilkan efek sukses
-          showScanSuccess();
-          
-          // Set nilai barcode
-          document.getElementById("barcodeInput").value = decodedText;
-          
-          // Auto-fill nama barang jika ada di database
-          handleBarcodeInput();
-          
-          // Fokus ke input qty
-          setTimeout(() => {
-            document.getElementById("qtyInput").focus();
-            document.getElementById("qtyInput").select();
-          }, 300);
-          
-          // Berhenti scanner sementara (opsional)
-          // scanner.pause();
-          
-          // Lanjutkan scanning setelah 2 detik
-          setTimeout(() => {
-            if (scanner && isCameraActive) {
-              // scanner.resume();
-            }
-          }, 2000);
-        };
-        
-        // Fungsi callback untuk error
-        const qrCodeErrorCallback = (error) => {
-          // Abaikan error umum, hanya log untuk debugging
-          if (!error.includes("NotFoundException")) {
-            console.log("Scanner error:", error);
-          }
-        };
-        
-        // Mulai scanner
-        await scanner.start(
-          cameraId,
-          config,
-          qrCodeSuccessCallback,
-          qrCodeErrorCallback
-        );
-        
-        // Update status
-        isCameraActive = true;
-        scannerButton.textContent = "📷 Kamera Aktif";
-        scannerButton.disabled = false;
-        scannerButton.style.display = 'none';
-        stopScannerButton.style.display = 'block';
-        cameraStatus.textContent = "📸 Kamera aktif - Arahkan ke barcode";
-        cameraStatus.className = "camera-status active";
-        readerDiv.style.display = "block";
-        
-        // Tambahkan overlay visual
-        addScannerOverlay();
-        
-        // Scroll ke area scanner
-        readerDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        console.log("Scanner started successfully");
-        
-      } catch (error) {
-        console.error("Error starting scanner:", error);
-        
-        // Tampilkan pesan error yang lebih user-friendly
-        let errorMessage = "Gagal mengaktifkan kamera: ";
-        
-        if (error.name === 'NotAllowedError') {
-          errorMessage += "Izin kamera ditolak. Silakan izinkan akses kamera di pengaturan browser.";
-        } else if (error.name === 'NotFoundError') {
-          errorMessage += "Kamera tidak ditemukan. Pastikan perangkat memiliki kamera.";
-        } else if (error.name === 'NotSupportedError') {
-          errorMessage += "Browser tidak mendukung akses kamera.";
-        } else if (error.name === 'NotReadableError') {
-          errorMessage += "Kamera sedang digunakan oleh aplikasi lain.";
-        } else {
-          errorMessage += error.message;
-        }
-        
-        alert("❌ " + errorMessage);
-        
-        // Reset UI
-        scannerButton.textContent = "📷 Aktifkan Kamera Scanner";
-        scannerButton.disabled = false;
-        cameraStatus.textContent = "📵 Gagal mengaktifkan kamera";
-        cameraStatus.className = "camera-status inactive";
-        
-        // Reset scanner
-        scanner = null;
-        isCameraActive = false;
-      }
-    }
-
-    // Fungsi untuk menghentikan scanner
-    async function stopScanner() {
-      if (!scanner || !isCameraActive) {
-        return;
-      }
-      
-      const scannerButton = document.getElementById("scannerButton");
-      const stopScannerButton = document.getElementById("stopScannerButton");
-      const cameraStatus = document.getElementById("cameraStatus");
-      const readerDiv = document.getElementById("reader");
-      
-      try {
-        // Update UI
-        stopScannerButton.textContent = "🔄 Mematikan...";
-        stopScannerButton.disabled = true;
-        
-        // Hentikan scanner
-        await scanner.stop();
-        
-        // Reset state
-        scanner = null;
-        isCameraActive = false;
-        
-        // Update UI
-        scannerButton.textContent = "📷 Aktifkan Kamera Scanner";
-        scannerButton.disabled = false;
-        scannerButton.style.display = 'block';
-        stopScannerButton.style.display = 'none';
-        cameraStatus.textContent = "📵 Kamera tidak aktif";
-        cameraStatus.className = "camera-status inactive";
-        readerDiv.style.display = "none";
-        readerDiv.innerHTML = ''; // Clear reader content
-        
-        // Hapus overlay
-        removeScannerOverlay();
-        
-        console.log("Scanner stopped successfully");
-        
-      } catch (error) {
-        console.error("Error stopping scanner:", error);
-        
-        // Force reset
-        scanner = null;
-        isCameraActive = false;
-        
-        // Update UI
-        scannerButton.textContent = "📷 Aktifkan Kamera Scanner";
-        scannerButton.disabled = false;
-        scannerButton.style.display = 'block';
-        stopScannerButton.style.display = 'none';
-        cameraStatus.textContent = "📵 Kamera dimatikan paksa";
-        cameraStatus.className = "camera-status inactive";
-        readerDiv.style.display = "none";
-        readerDiv.innerHTML = '';
-        
-        alert("❌ Gagal mematikan kamera dengan benar. Silakan refresh halaman jika bermasalah.");
-      }
-    }
-
-    // Fungsi untuk menambahkan overlay scanner
-    function addScannerOverlay() {
-      const readerDiv = document.getElementById("reader");
-      
-      // Hapus overlay lama jika ada
-      removeScannerOverlay();
-      
-      // Buat overlay baru
-      const overlay = document.createElement('div');
-      overlay.className = 'camera-overlay';
-      overlay.id = 'scannerOverlay';
-      
-      // Buat area scan
-      const scanRegion = document.createElement('div');
-      scanRegion.className = 'scan-region';
-      
-      // Buat garis scan animasi
-      const scanLine = document.createElement('div');
-      scanLine.className = 'scan-line';
-      
-      // Tambahkan ke overlay
-      scanRegion.appendChild(scanLine);
-      overlay.appendChild(scanRegion);
-      
-      // Tambahkan instruksi
-      const instructions = document.createElement('div');
-      instructions.style.position = 'absolute';
-      instructions.style.bottom = '20px';
-      instructions.style.left = '0';
-      instructions.style.width = '100%';
-      instructions.style.textAlign = 'center';
-      instructions.style.color = 'white';
-      instructions.style.fontSize = '14px';
-      instructions.style.fontWeight = 'bold';
-      instructions.style.textShadow = '0 1px 3px rgba(0,0,0,0.8)';
-      instructions.textContent = 'Arahkan barcode ke area kotak hijau';
-      overlay.appendChild(instructions);
-      
-      // Tambahkan ke reader
-      readerDiv.appendChild(overlay);
-    }
-
-    // Fungsi untuk menghapus overlay scanner
-    function removeScannerOverlay() {
-      const overlay = document.getElementById('scannerOverlay');
-      if (overlay) {
-        overlay.remove();
-      }
-    }
-
-    // Fungsi untuk menampilkan efek scan sukses
-    function showScanSuccess() {
-      // Tampilkan flash effect
-      const flash = document.getElementById('flashEffect');
-      flash.style.display = 'block';
-      setTimeout(() => {
-        flash.style.display = 'none';
-      }, 500);
-      
-      // Tampilkan success message
-      const successMsg = document.getElementById('scanSuccess');
-      successMsg.style.display = 'block';
-      
-      // Mainkan sukses (opsional - bisa ditambahkan sound)
-      playBeepSound();
-      
-      // Sembunyikan setelah 2 detik
-      setTimeout(() => {
-        successMsg.style.display = 'none';
-      }, 2000);
-    }
-
-    // Fungsi untuk memainkan suara beep (opsional)
-    function playBeepSound() {
-      try {
-        // Coba buat audio context
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 800;
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.5);
-        
-      } catch (error) {
-        console.log("Tidak dapat memainkan suara:", error);
-      }
-    }
-
-    // Fungsi untuk menambahkan barcode manual
-    function addBarcodeManual() {
-      const manualInput = document.getElementById("manualBarcodeInput");
-      const barcode = manualInput.value.trim();
-      
-      if (!barcode) {
-        alert("Masukkan barcode terlebih dahulu!");
-        return;
-      }
-      
-      document.getElementById("barcodeInput").value = barcode;
-      handleBarcodeInput();
-      manualInput.value = "";
-      
-      // Tampilkan feedback
-      showScanSuccess();
-      
-      // Fokus ke qty input
-      setTimeout(() => {
-        document.getElementById("qtyInput").focus();
-        document.getElementById("qtyInput").select();
-      }, 300);
-    }
-
-    // Fungsi untuk toggle scanner dengan UI yang lebih baik
-    function toggleScannerUI() {
-      if (isCameraActive) {
-        stopScanner();
-      } else {
-        // Cek apakah ada kamera yang tersedia
-        if (availableCameras.length === 0) {
-          alert("🔄 Mencari kamera...");
-          getCameras().then(() => {
-            if (availableCameras.length > 0) {
-              startScanner();
-            } else {
-              alert("❌ Tidak ada kamera yang ditemukan. Pastikan perangkat memiliki kamera dan izin sudah diberikan.");
-            }
-          });
-        } else {
-          startScanner();
-        }
-      }
     }
 
     // =============== FUNGSI TABEL ===============
@@ -1381,14 +423,12 @@
         row.insertCell().innerText = item.qty;
 
         const aksiCell = row.insertCell();
-        aksiCell.className = 'action-buttons';
         
         const editBtn = document.createElement("button");
         editBtn.textContent = "Edit";
-        editBtn.style.backgroundColor = "#2196F3";
-        editBtn.style.color = "white";
-        editBtn.style.padding = "6px 8px";
-        editBtn.style.fontSize = "13px";
+        editBtn.style.marginRight = "5px";
+        editBtn.style.backgroundColor = "#ffc107";
+        editBtn.style.color = "black";
         editBtn.onclick = () => {
           const newQty = prompt("Masukkan Qty baru:", item.qty);
           if (newQty !== null && !isNaN(newQty)) {
@@ -1403,8 +443,6 @@
         delBtn.textContent = "Hapus";
         delBtn.style.backgroundColor = "#f44336";
         delBtn.style.color = "white";
-        delBtn.style.padding = "6px 8px";
-        delBtn.style.fontSize = "13px";
         delBtn.onclick = () => {
           if (confirm("Yakin ingin menghapus baris ini?")) {
             dataScan.splice(index, 1);
@@ -1431,10 +469,7 @@
         const qtyInput = document.createElement("input");
         qtyInput.type = "number";
         qtyInput.value = item.qty;
-        qtyInput.style.width = "70px";
-        qtyInput.style.padding = "6px";
-        qtyInput.style.fontSize = "14px";
-        qtyInput.min = "0";
+        qtyInput.style.width = "60px";
         qtyInput.onchange = (e) => {
           uploadedItems[index].qty = parseInt(e.target.value) || 0;
           saveDataToLocalStorage();
@@ -1442,13 +477,10 @@
         qtyCell.appendChild(qtyInput);
 
         const actionCell = row.insertCell();
-        actionCell.className = 'action-buttons';
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Hapus";
         deleteBtn.style.backgroundColor = "#f44336";
         deleteBtn.style.color = "white";
-        deleteBtn.style.padding = "6px 8px";
-        deleteBtn.style.fontSize = "13px";
         deleteBtn.onclick = () => {
           if (confirm("Yakin ingin menghapus item ini?")) {
             uploadedItems.splice(index, 1);
@@ -1489,62 +521,6 @@
       }
     }
 
-    async function testSupabaseConnection() {
-      if (!supabaseClient) return false;
-      
-      try {
-        const { data, error } = await supabaseClient
-          .from('stok_barang')
-          .select('count', { count: 'exact', head: true })
-          .limit(1);
-        
-        if (error) {
-          console.error("Supabase connection test failed:", error);
-          return false;
-        }
-        
-        return true;
-      } catch (error) {
-        console.error("Supabase connection test failed:", error);
-        return false;
-      }
-    }
-
-    async function updateSupabaseStatus() {
-      const statusDiv = document.getElementById('supabaseStatus');
-      const statusText = document.getElementById('supabaseStatusText');
-      
-      if (!statusDiv || !statusText) return;
-      
-      const supabaseUrl = localStorage.getItem("supabaseUrl");
-      const supabaseKey = localStorage.getItem("supabaseKey");
-      
-      if (!supabaseUrl || !supabaseKey) {
-        statusDiv.style.display = 'block';
-        statusDiv.className = 'status-warning';
-        statusText.innerHTML = '⚠️ SUPABASE BELUM DIKONFIGURASI';
-        return;
-      }
-      
-      if (!supabaseClient) {
-        statusDiv.style.display = 'block';
-        statusDiv.className = 'status-error';
-        statusText.innerHTML = '❌ KONEKSI SUPABASE GAGAL';
-        return;
-      }
-      
-      const isConnected = await testSupabaseConnection();
-      
-      statusDiv.style.display = 'block';
-      if (isConnected) {
-        statusDiv.className = 'status-success';
-        statusText.innerHTML = '✅ TERHUBUNG KE SUPABASE (tabel: stok_barang)';
-      } else {
-        statusDiv.className = 'status-error';
-        statusText.innerHTML = '❌ GAGAL TERHUBUNG KE SUPABASE';
-      }
-    }
-
     function showSupabaseConfig() {
       document.getElementById('supabaseUrl').value = localStorage.getItem("supabaseUrl") || "";
       document.getElementById('supabaseKey').value = localStorage.getItem("supabaseKey") || "";
@@ -1570,36 +546,8 @@
       
       if (initSupabaseClient(url, key)) {
         alert("✅ Konfigurasi Supabase berhasil disimpan.");
-        updateSupabaseStatus();
         document.getElementById('supabaseModal').style.display = 'none';
       }
-    }
-
-    function showSupabaseTableCreationGuide() {
-      const sql = `-- Buat tabel stok_barang di Supabase
-CREATE TABLE IF NOT EXISTS public.stok_barang (
-  id BIGSERIAL PRIMARY KEY,
-  user TEXT,
-  lokasi TEXT,
-  barcode TEXT,
-  nama_barang TEXT,
-  qty BIGINT DEFAULT 0,
-  scanned_at TIMESTAMPTZ DEFAULT NOW(),
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Berikan izin akses
-ALTER TABLE public.stok_barang ENABLE ROW LEVEL SECURITY;
-
--- Buat policy untuk akses
-CREATE POLICY "Enable all access for authenticated users" 
-ON public.stok_barang 
-FOR ALL 
-TO authenticated 
-USING (true) 
-WITH CHECK (true);`;
-      
-      alert(`UNTUK MEMBUAT TABEL DI SUPABASE:\n\n1. Buka Supabase Dashboard\n2. Pilih SQL Editor\n3. Jalankan query berikut:\n\n${sql}`);
     }
 
     // =============== FUNGSI AMBIL DATA PER LOKASI ===============
@@ -1632,20 +580,16 @@ WITH CHECK (true);`;
         
         if (!locationList) return;
         
-        locationList.innerHTML = '<div style="text-align: center; padding: 30px; color: #666; font-size: 16px;">🔄 Memuat data dari Supabase...</div>';
+        locationList.innerHTML = '<div style="text-align: center; padding: 20px;">Memuat data dari Supabase...</div>';
         progressBarContainer.style.display = 'block';
-        progressBar.style.width = '5%';
-        progressBar.textContent = '5%';
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
         loadingStatus.style.display = 'block';
-        loadingDetails.textContent = 'Menyiapkan...';
         
         console.log('Memulai pengambilan data dari Supabase...');
         
         // Ambil total count terlebih dahulu
         loadingDetails.textContent = 'Menghitung total data...';
-        progressBar.style.width = '10%';
-        progressBar.textContent = '10%';
-        
         const { count, error: countError } = await supabaseClient
           .from('stok_barang')
           .select('*', { count: 'exact', head: true });
@@ -1657,11 +601,9 @@ WITH CHECK (true);`;
         const totalData = count || 0;
         console.log(`Total data di Supabase: ${totalData}`);
         loadingDetails.textContent = `Total data: ${totalData.toLocaleString()} item`;
-        progressBar.style.width = '20%';
-        progressBar.textContent = '20%';
         
         if (totalData === 0) {
-          locationList.innerHTML = '<div style="text-align: center; padding: 30px; color: #666; font-size: 16px;">📭 Tidak ada data ditemukan di Supabase.</div>';
+          locationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Tidak ada data ditemukan di Supabase.</div>';
           progressBarContainer.style.display = 'none';
           loadingStatus.style.display = 'none';
           isFetchingData = false;
@@ -1678,9 +620,8 @@ WITH CHECK (true);`;
           const to = from + pageSize - 1;
           
           loadingDetails.textContent = `Mengambil data ${from + 1}-${Math.min(to + 1, totalData)} dari ${totalData}...`;
-          const progressPercent = Math.min(20 + ((page + 1) / totalPages * 70), 90);
-          progressBar.style.width = `${progressPercent}%`;
-          progressBar.textContent = `${Math.round(progressPercent)}%`;
+          progressBar.style.width = `${((page + 1) / totalPages * 100).toFixed(0)}%`;
+          progressBar.textContent = `${((page + 1) / totalPages * 100).toFixed(0)}%`;
           
           console.log(`Mengambil halaman ${page + 1}/${totalPages}...`);
           
@@ -1699,14 +640,13 @@ WITH CHECK (true);`;
             console.log(`Halaman ${page + 1}: ${data.length} data, total: ${allData.length} data`);
           }
           
-          // Beri jeda untuk UI tidak freeze
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
         
         console.log(`Total data berhasil diambil: ${allData.length} baris`);
         
         if (allData.length === 0) {
-          locationList.innerHTML = '<div style="text-align: center; padding: 30px; color: #666; font-size: 16px;">📭 Tidak ada data ditemukan di Supabase.</div>';
+          locationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Tidak ada data ditemukan di Supabase.</div>';
           progressBarContainer.style.display = 'none';
           loadingStatus.style.display = 'none';
           isFetchingData = false;
@@ -1715,8 +655,8 @@ WITH CHECK (true);`;
         
         // Kelompokkan data berdasarkan lokasi
         loadingDetails.textContent = 'Mengelompokkan data berdasarkan lokasi...';
-        progressBar.style.width = '95%';
-        progressBar.textContent = '95%';
+        progressBar.style.width = '100%';
+        progressBar.textContent = '100%';
         
         const groupedData = {};
         allData.forEach(item => {
@@ -1729,7 +669,7 @@ WITH CHECK (true);`;
         
         console.log(`Jumlah lokasi: ${Object.keys(groupedData).length}`);
         
-        // Tampilkan tombol lokasi dengan ukuran lebih besar
+        // Tampilkan tombol lokasi
         locationList.innerHTML = '';
         const locations = Object.keys(groupedData).sort();
         
@@ -1737,36 +677,28 @@ WITH CHECK (true);`;
         const allButton = document.createElement('button');
         allButton.className = 'user-button';
         allButton.dataset.location = 'Semua Lokasi';
-        allButton.style.fontSize = '15px';
-        allButton.style.padding = '18px 10px';
         allButton.innerHTML = `
-          <div style="font-weight: bold; margin-bottom: 5px;">📦 SEMUA LOKASI</div>
-          <div style="font-size: 13px; background: #666; color: white; padding: 4px 8px; border-radius: 12px; display: inline-block;">
-            ${allData.length.toLocaleString()} ITEM
-          </div>
+          Semua Lokasi
+          <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
+            ${allData.length.toLocaleString()}
+          </span>
         `;
         allButton.onclick = (e) => {
           selectLocationInModal('Semua Lokasi', allData, e.target);
         };
         locationList.appendChild(allButton);
         
-        // Tambahkan tombol untuk setiap lokasi dengan ukuran lebih besar
+        // Tambahkan tombol untuk setiap lokasi
         locations.forEach(location => {
           if (groupedData[location].length > 0) {
             const button = document.createElement('button');
             button.className = 'user-button';
             button.dataset.location = location;
-            button.style.fontSize = '15px';
-            button.style.padding = '18px 10px';
-            
-            // Potong teks lokasi jika terlalu panjang
-            const displayLocation = location.length > 20 ? location.substring(0, 20) + '...' : location;
-            
             button.innerHTML = `
-              <div style="font-weight: bold; margin-bottom: 5px;">📍 ${displayLocation}</div>
-              <div style="font-size: 13px; background: #666; color: white; padding: 4px 8px; border-radius: 12px; display: inline-block;">
-                ${groupedData[location].length.toLocaleString()} ITEM
-              </div>
+              ${location} 
+              <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
+                ${groupedData[location].length.toLocaleString()}
+              </span>
             `;
             button.onclick = (e) => {
               selectLocationInModal(location, groupedData[location], e.target);
@@ -1788,11 +720,7 @@ WITH CHECK (true);`;
           };
         }
         
-        // Selesaikan progress bar
-        progressBar.style.width = '100%';
-        progressBar.textContent = '100%';
-        
-        // Sembunyikan progress bar setelah 1 detik
+        // Sembunyikan progress bar
         setTimeout(() => {
           progressBarContainer.style.display = 'none';
           loadingStatus.style.display = 'none';
@@ -1800,24 +728,16 @@ WITH CHECK (true);`;
         
         // Tampilkan statistik
         const statsDiv = document.createElement('div');
-        statsDiv.style.marginTop = '15px';
-        statsDiv.style.padding = '15px';
+        statsDiv.style.marginTop = '10px';
+        statsDiv.style.padding = '10px';
         statsDiv.style.background = '#e8f5e8';
-        statsDiv.style.borderRadius = '10px';
-        statsDiv.style.fontSize = '14px';
-        statsDiv.style.borderLeft = '5px solid #4CAF50';
+        statsDiv.style.borderRadius = '4px';
+        statsDiv.style.fontSize = '12px';
         statsDiv.innerHTML = `
-          <div style="font-weight: bold; color: #155724; margin-bottom: 8px; font-size: 15px;">✅ DATA BERHASIL DIMUAT</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
-              <div style="font-weight: bold;">📊 Total Data:</div>
-              <div style="color: #388e3c;">${allData.length.toLocaleString()} item</div>
-            </div>
-            <div>
-              <div style="font-weight: bold;">📍 Lokasi:</div>
-              <div style="color: #388e3c;">${locations.length} lokasi</div>
-            </div>
-          </div>
+          <strong>✅ Data berhasil dimuat!</strong><br>
+          • Total data: ${allData.length.toLocaleString()} item<br>
+          • Lokasi: ${locations.length} lokasi<br>
+          • Data terbaru: ${allData.length > 0 ? new Date(allData[0].created_at || Date.now()).toLocaleDateString('id-ID') : 'N/A'}
         `;
         locationList.parentNode.insertBefore(statsDiv, locationList.nextSibling);
         
@@ -1826,12 +746,9 @@ WITH CHECK (true);`;
         const locationList = document.getElementById('locationList');
         if (locationList) {
           locationList.innerHTML = `
-            <div style="text-align: center; padding: 30px; color: #dc2626;">
-              <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">❌ GAGAL MEMUAT DATA</div>
-              <div style="font-size: 14px; color: #666; margin-bottom: 15px;">${error.message}</div>
-              <button onclick="showSupabaseTableCreationGuide()" style="padding: 12px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold;">
-                📋 LIHAT PANDUAN BUAT TABEL
-              </button>
+            <div style="text-align: center; padding: 20px; color: #f44336;">
+              <h4>Gagal memuat data dari Supabase</h4>
+              <p style="font-size: 12px;">${error.message}</p>
             </div>
           `;
         }
@@ -1859,8 +776,8 @@ WITH CHECK (true);`;
       
       if (infoDiv && infoContent && countDiv && loadBtn) {
         infoDiv.style.display = 'block';
-        infoContent.innerHTML = `<div style="font-size: 17px;">📍 ${location}</div>`;
-        countDiv.innerHTML = `<div style="font-size: 15px; margin-top: 5px;">📦 ${items.length.toLocaleString()} item ditemukan</div>`;
+        infoContent.innerHTML = `<strong>${location}</strong> dipilih`;
+        countDiv.textContent = `${items.length.toLocaleString()} item ditemukan`;
         loadBtn.style.display = 'block';
         
         // Simpan data lokasi yang dipilih
@@ -1898,30 +815,30 @@ WITH CHECK (true);`;
       locationNameSpan.textContent = location;
       currentLocationInfo.innerHTML = `
         <div>
-          <div style="font-size: 17px; font-weight: bold;">📍 ${location}</div>
-          <div style="font-size: 15px; color: #666; margin-top: 5px;">📦 ${items.length.toLocaleString()} item</div>
+          <strong>${location}</strong>
+          <div style="font-size: 12px; color: #666;">${items.length.toLocaleString()} item</div>
         </div>
       `;
       
-      // Isi tabel items dengan ukuran font lebih besar
+      // Isi tabel items (maksimal 500 item untuk performa)
       itemsBody.innerHTML = '';
       
-      const displayItems = items.slice(0, 100); // Batasi untuk performa mobile
+      const displayItems = items.slice(0, 500);
       
       if (displayItems.length === 0) {
         itemsBody.innerHTML = `
           <tr>
-            <td colspan="4" style="text-align: center; padding: 30px; color: #666; font-size: 16px;">
-              📭 Tidak ada item di lokasi ini
+            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
+              Tidak ada item di lokasi ini
             </td>
           </tr>
         `;
       } else {
-        if (items.length > 100) {
+        if (items.length > 500) {
           const warningRow = document.createElement('tr');
           warningRow.innerHTML = `
-            <td colspan="4" style="text-align: center; padding: 15px; background: #fff3cd; color: #856404; font-size: 14px;">
-              <strong>ℹ️ INFO:</strong> Menampilkan 100 item pertama dari ${items.length.toLocaleString()} item total
+            <td colspan="4" style="text-align: center; padding: 10px; background: #fff3cd; color: #856404;">
+              <strong>Info:</strong> Menampilkan 500 item pertama dari ${items.length.toLocaleString()} item total
             </td>
           `;
           itemsBody.appendChild(warningRow);
@@ -1929,35 +846,32 @@ WITH CHECK (true);`;
         
         displayItems.forEach((item, index) => {
           const row = document.createElement('tr');
-          row.style.borderBottom = '2px solid #f0f0f0';
+          row.style.borderBottom = '1px solid #eee';
           
           // Gunakan field yang benar dari database
-          const namaBarang = item.nama_barang || item.nama || item.item_name || 'N/A';
+          const namaBarang = item.nama || item.nama_barang || item.item_name || 'N/A';
           const barcodeBarang = item.barcode || item.kode || item.kode_barang || '-';
           const qtyBarang = item.qty || item.quantity || item.stock || 0;
           
-          // Potong nama jika terlalu panjang untuk mobile
-          const displayNama = namaBarang.length > 30 ? namaBarang.substring(0, 30) + '...' : namaBarang;
-          
           row.innerHTML = `
-            <td style="padding: 15px 10px; text-align: center; vertical-align: middle;">
-              <input type="checkbox" class="item-checkbox" data-index="${index}" style="width: 22px; height: 22px;" />
+            <td style="padding: 8px; text-align: center;">
+              <input type="checkbox" class="item-checkbox" data-index="${index}" />
             </td>
-            <td style="padding: 15px 10px; vertical-align: middle;">
-              <div style="font-weight: bold; font-size: 15px; margin-bottom: 3px;">${displayNama}</div>
-              ${qtyBarang ? `<div style="font-size: 13px; color: #4CAF50; background: #e8f5e8; padding: 3px 8px; border-radius: 4px; display: inline-block;">Stok: ${qtyBarang}</div>` : ''}
+            <td style="padding: 8px;">
+              ${namaBarang}
+              ${qtyBarang ? `<div style="font-size: 11px; color: #666;">Stok: ${qtyBarang}</div>` : ''}
             </td>
-            <td style="padding: 15px 10px; font-family: monospace; font-size: 14px; vertical-align: middle;">
+            <td style="padding: 8px; font-family: monospace;">
               ${barcodeBarang}
             </td>
-            <td style="padding: 15px 10px; vertical-align: middle;">
+            <td style="padding: 8px;">
               <input type="number" 
                      class="item-qty" 
                      data-index="${index}"
                      min="0" 
                      value="0" 
-                     style="width: 80px; padding: 10px; text-align: center; font-size: 15px; border: 2px solid #ddd; border-radius: 6px;"
-                     placeholder="0" />
+                     style="width: 80px; padding: 4px; text-align: center;"
+                     placeholder="Qty scan" />
             </td>
           `;
           
@@ -1970,9 +884,6 @@ WITH CHECK (true);`;
       
       // Tampilkan modal
       modal.style.display = 'block';
-      
-      // Adjust UI setelah modal terbuka
-      setTimeout(adjustForMobile, 100);
     }
 
     function updateSelectedCount() {
@@ -1980,12 +891,7 @@ WITH CHECK (true);`;
       const countDiv = document.getElementById('selectedCount');
       
       if (countDiv) {
-        const count = checkboxes.length;
-        countDiv.innerHTML = `
-          <div style="font-size: 16px; color: #333;">
-            <span style="font-weight: bold; color: #4CAF50;">${count}</span> ITEM DIPILIH
-          </div>
-        `;
+        countDiv.textContent = `${checkboxes.length} item dipilih`;
       }
     }
 
@@ -2027,7 +933,7 @@ WITH CHECK (true);`;
             const barcodeCell = cells[2];
             
             // Ambil teks dari sel, hapus informasi tambahan
-            let namaText = namaCell.querySelector('div')?.textContent || namaCell.textContent;
+            let namaText = namaCell.textContent;
             // Hapus "Stok: X" jika ada
             namaText = namaText.split('Stok:')[0].trim();
             
@@ -2046,7 +952,7 @@ WITH CHECK (true);`;
       });
       
       if (selectedItems.length === 0) {
-        alert('❌ Pilih minimal satu item dan isi qty yang valid.');
+        alert('Pilih minimal satu item dan isi qty yang valid.');
         return;
       }
       
@@ -2090,90 +996,6 @@ WITH CHECK (true);`;
       alert(`✅ ${count} item berhasil ditambahkan ke data scan untuk lokasi ${locationName}.`);
     }
 
-    // =============== FUNGSI SIMPAN KE SUPABASE ===============
-    async function saveToSupabase() {
-      if (!supabaseClient) {
-        alert("Silakan konfigurasi Supabase terlebih dahulu.");
-        showSupabaseConfig();
-        return;
-      }
-      
-      if (dataScan.length === 0) {
-        alert("Tidak ada data untuk disimpan!");
-        return;
-      }
-      
-      if (!confirm(`Simpan ${dataScan.length} data ke tabel stok_barang di Supabase?`)) {
-        return;
-      }
-      
-      // Tampilkan loading
-      const originalText = document.getElementById('saveToSupabaseBtn').textContent;
-      document.getElementById('saveToSupabaseBtn').textContent = '🔄 Menyimpan...';
-      document.getElementById('saveToSupabaseBtn').disabled = true;
-      
-      try {
-        // Siapkan data untuk disimpan - SESUAIKAN DENGAN KOLOM DI SUPABASE
-        const dataToSave = dataScan.map(item => ({
-          user: item.user || "Unknown",
-          lokasi: item.lokasi || "Unknown",
-          barcode: item.barcode || "",
-          nama_barang: item.nama || "", // PERHATIAN: nama_barang (bukan 'nama')
-          qty: item.qty || 0,
-          scanned_at: new Date().toISOString(),
-          created_at: new Date().toISOString()
-        }));
-        
-        console.log("Menyimpan data ke tabel stok_barang:", dataToSave);
-        
-        // Kirim data ke Supabase
-        const { data, error } = await supabaseClient
-          .from('stok_barang')
-          .insert(dataToSave);
-        
-        if (error) {
-          throw error;
-        }
-        
-        alert(`✅ ${dataScan.length} data berhasil disimpan ke tabel stok_barang di Supabase!`);
-        
-        // Kosongkan data setelah disimpan
-        dataScan = [];
-        saveDataToLocalStorage();
-        updateTable();
-        updateSupabaseStatus();
-        
-      } catch (error) {
-        console.error("Error saving to Supabase:", error);
-        
-        // Berikan pesan error yang lebih spesifik
-        let errorMessage = error.message;
-        if (error.message.includes('violates unique constraint')) {
-          errorMessage = "Beberapa data sudah ada di database. Silakan hapus data duplikat terlebih dahulu.";
-        } else if (error.message.includes('permission denied')) {
-          errorMessage = "Izin ditolak. Pastikan API key memiliki hak akses INSERT ke tabel stok_barang.";
-        } else if (error.message.includes('Could not find the table')) {
-          errorMessage = "Tabel 'stok_barang' tidak ditemukan. Silakan buat tabel terlebih dahulu di Supabase.";
-        } else if (error.message.includes('column "nama_barang" of relation "stok_barang" does not exist')) {
-          errorMessage = "Kolom 'nama_barang' tidak ditemukan di tabel. Pastikan struktur tabel sesuai.";
-        }
-        
-        alert(`❌ Gagal menyimpan ke Supabase: ${errorMessage}`);
-        
-        // Tampilkan opsi untuk membuat tabel
-        if (error.message.includes('Could not find the table') || error.message.includes('column') || error.message.includes('does not exist')) {
-          if (confirm("Struktur tabel tidak sesuai. Lihat panduan membuat tabel stok_barang?")) {
-            showSupabaseTableCreationGuide();
-          }
-        }
-        
-      } finally {
-        // Reset tombol
-        document.getElementById('saveToSupabaseBtn').textContent = originalText;
-        document.getElementById('saveToSupabaseBtn').disabled = false;
-      }
-    }
-
     // =============== FUNGSI LAINNYA ===============
     function lockLokasi() {
       const lokasiInput = document.getElementById("lokasiInput");
@@ -2183,7 +1005,7 @@ WITH CHECK (true);`;
       }
       lokasiInput.disabled = true;
       lokasiTerkunci = true;
-      alert("✅ Lokasi berhasil dikunci!");
+      alert("Lokasi berhasil dikunci!");
     }
 
     function ubahLokasi() {
@@ -2191,7 +1013,6 @@ WITH CHECK (true);`;
       lokasiInput.disabled = false;
       lokasiTerkunci = false;
       lokasiInput.focus();
-      alert("✅ Lokasi bisa diubah, silakan edit.");
     }
 
     function lockUploadLokasi() {
@@ -2202,7 +1023,7 @@ WITH CHECK (true);`;
       }
       lokasiInput.disabled = true;
       uploadLokasiTerkunci = true;
-      alert("✅ Lokasi berhasil dikunci!");
+      alert("Lokasi berhasil dikunci!");
     }
 
     function ubahUploadLokasi() {
@@ -2210,7 +1031,6 @@ WITH CHECK (true);`;
       lokasiInput.disabled = false;
       uploadLokasiTerkunci = false;
       lokasiInput.focus();
-      alert("✅ Lokasi bisa diubah, silakan edit.");
     }
 
     function handleBarcodeInput() {
@@ -2221,17 +1041,9 @@ WITH CHECK (true);`;
       if (barcode) {
         if (dataBarang[barcode]) {
           namaBarangInput.value = dataBarang[barcode];
-          namaBarangInput.style.color = "#155724";
-          namaBarangInput.style.backgroundColor = "#d4edda";
         } else {
-          namaBarangInput.value = "❌ Barang tidak ditemukan";
-          namaBarangInput.style.color = "#721c24";
-          namaBarangInput.style.backgroundColor = "#f8d7da";
+          namaBarangInput.value = "Barang tidak ditemukan";
         }
-      } else {
-        namaBarangInput.value = "";
-        namaBarangInput.style.color = "";
-        namaBarangInput.style.backgroundColor = "#f5f5f5";
       }
     }
 
@@ -2243,22 +1055,22 @@ WITH CHECK (true);`;
       const qty = parseInt(document.getElementById("qtyInput").value) || 0;
       
       if (!lokasi) {
-        alert("❌ Harap isi nama lokasi terlebih dahulu!");
+        alert("Harap isi nama lokasi terlebih dahulu!");
         return;
       }
       
       if (!barcode) {
-        alert("❌ Harap scan atau masukkan barcode!");
+        alert("Harap scan atau masukkan barcode!");
         return;
       }
       
-      if (!nama || nama === "❌ Barang tidak ditemukan") {
-        alert("❌ Barang tidak ditemukan dalam database!");
+      if (!nama || nama === "Barang tidak ditemukan") {
+        alert("Barang tidak ditemukan dalam database!");
         return;
       }
       
       if (qty <= 0) {
-        alert("❌ Harap masukkan jumlah (qty) yang valid!");
+        alert("Harap masukkan jumlah (qty) yang valid!");
         return;
       }
       
@@ -2270,7 +1082,7 @@ WITH CHECK (true);`;
       if (existingIndex > -1) {
         // Update qty jika sudah ada
         dataScan[existingIndex].qty += qty;
-        alert(`✅ Qty untuk ${nama} diperbarui menjadi ${dataScan[existingIndex].qty}`);
+        alert(`Qty untuk ${nama} diperbarui menjadi ${dataScan[existingIndex].qty}`);
       } else {
         // Tambah data baru
         dataScan.push({
@@ -2280,15 +1092,13 @@ WITH CHECK (true);`;
           nama: nama,
           qty: qty
         });
-        alert(`✅ Data ${nama} berhasil ditambahkan!`);
+        alert(`Data ${nama} berhasil ditambahkan!`);
       }
       
       // Reset input
       document.getElementById("barcodeInput").value = "";
       document.getElementById("namaBarangInput").value = "";
-      document.getElementById("namaBarangInput").style.color = "";
-      document.getElementById("namaBarangInput").style.backgroundColor = "#f5f5f5";
-      document.getElementById("qtyInput").value = "1";
+      document.getElementById("qtyInput").value = "";
       
       // Fokus kembali ke input barcode
       document.getElementById("barcodeInput").focus();
@@ -2332,7 +1142,7 @@ WITH CHECK (true);`;
       const lokasi = document.getElementById("uploadLokasiInput").value;
       
       if (!lokasi) {
-        alert("❌ Harap isi nama lokasi terlebih dahulu!");
+        alert("Harap isi nama lokasi terlebih dahulu!");
         event.target.value = "";
         return;
       }
@@ -2407,6 +1217,196 @@ WITH CHECK (true);`;
       }
     }
 
+    // =============== FUNGSI KAMERA YANG DIPERBAIKI ===============
+    async function toggleScanner() {
+      const scannerButton = document.getElementById("scannerButton");
+      const cameraStatus = document.getElementById("cameraStatus");
+      const readerDiv = document.getElementById("reader");
+      const switchCameraBtn = document.getElementById("switchCameraBtn");
+      
+      if (!scanner) {
+        // Aktifkan scanner
+        scanner = new Html5Qrcode("reader");
+        
+        const qrCodeSuccessCallback = (decodedText) => {
+          console.log("Barcode terdeteksi:", decodedText);
+          document.getElementById("barcodeInput").value = decodedText;
+          handleBarcodeInput();
+          
+          // Auto-fokus ke qty input setelah scan
+          setTimeout(() => {
+            document.getElementById("qtyInput").focus();
+          }, 100);
+          
+          // Tidak menghentikan kamera setelah scan
+          // scanner.stop();
+        };
+        
+        const config = { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 },
+          rememberLastUsedCamera: true,
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        };
+        
+        try {
+          // Dapatkan daftar kamera
+          const devices = await Html5Qrcode.getCameras();
+          cameras = devices;
+          
+          if (cameras.length === 0) {
+            throw new Error("Tidak ada kamera yang ditemukan");
+          }
+          
+          console.log("Kamera yang tersedia:", cameras);
+          
+          // Pilih kamera default (back camera di mobile, webcam di desktop)
+          let cameraId = null;
+          if (cameras.length > 1) {
+            // Coba cari kamera belakang untuk mobile
+            const backCamera = cameras.find(cam => 
+              cam.label.toLowerCase().includes('back') || 
+              cam.label.toLowerCase().includes('rear')
+            );
+            
+            if (backCamera) {
+              cameraId = backCamera.id;
+              isBackCamera = true;
+            } else {
+              cameraId = cameras[0].id;
+              isBackCamera = cameras[0].label.toLowerCase().includes('front') ? false : true;
+            }
+          } else {
+            cameraId = cameras[0].id;
+          }
+          
+          currentCameraId = cameraId;
+          
+          // Tampilkan tombol ganti kamera jika ada lebih dari 1
+          if (cameras.length > 1) {
+            switchCameraBtn.style.display = 'inline-block';
+          }
+          
+          // Mulai scanner
+          await scanner.start(
+            cameraId,
+            config,
+            qrCodeSuccessCallback,
+            (errorMessage) => {
+              // Error callback
+              console.log("Scan error:", errorMessage);
+            }
+          );
+          
+          // Update UI setelah berhasil
+          scannerButton.textContent = "⏹️ Matikan Kamera";
+          cameraStatus.textContent = "Kamera aktif";
+          cameraStatus.className = "camera-status active";
+          readerDiv.style.display = "block";
+          
+          // Auto-focus ke barcode input untuk keyboard input
+          document.getElementById("barcodeInput").focus();
+          
+        } catch (err) {
+          console.error("Scanner error:", err);
+          
+          // Coba dengan facingMode sebagai fallback
+          try {
+            await scanner.start(
+              { facingMode: isBackCamera ? "environment" : "user" },
+              config,
+              qrCodeSuccessCallback,
+              () => {}
+            );
+            
+            scannerButton.textContent = "⏹️ Matikan Kamera";
+            cameraStatus.textContent = "Kamera aktif (mode fallback)";
+            cameraStatus.className = "camera-status active";
+            readerDiv.style.display = "block";
+            switchCameraBtn.style.display = 'none'; // Nonaktifkan ganti kamera di mode fallback
+            
+          } catch (fallbackErr) {
+            console.error("Fallback juga gagal:", fallbackErr);
+            cameraStatus.textContent = "Gagal mengaktifkan kamera: " + err.message;
+            cameraStatus.className = "camera-status error";
+            scanner = null;
+            alert("Gagal mengaktifkan kamera. Pastikan izin kamera diberikan dan kamera tersedia.");
+          }
+        }
+      } else {
+        // Matikan scanner
+        try {
+          await scanner.stop();
+          scanner = null;
+          currentCameraId = null;
+          
+          scannerButton.textContent = "📷 Aktifkan Kamera";
+          cameraStatus.textContent = "Kamera tidak aktif";
+          cameraStatus.className = "camera-status inactive";
+          readerDiv.style.display = "none";
+          switchCameraBtn.style.display = 'none';
+          
+          // Fokus kembali ke input barcode
+          document.getElementById("barcodeInput").focus();
+          
+        } catch (err) {
+          console.error("Error stopping scanner:", err);
+          alert("Gagal mematikan kamera: " + err.message);
+        }
+      }
+    }
+
+    async function switchCamera() {
+      if (!scanner || cameras.length <= 1) return;
+      
+      try {
+        // Hentikan scanner saat ini
+        await scanner.stop();
+        
+        // Tentukan kamera berikutnya
+        let nextCameraIndex = 0;
+        for (let i = 0; i < cameras.length; i++) {
+          if (cameras[i].id === currentCameraId) {
+            nextCameraIndex = (i + 1) % cameras.length;
+            break;
+          }
+        }
+        
+        currentCameraId = cameras[nextCameraIndex].id;
+        isBackCamera = !cameras[nextCameraIndex].label.toLowerCase().includes('front');
+        
+        // Mulai scanner dengan kamera baru
+        const config = { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 }
+        };
+        
+        const qrCodeSuccessCallback = (decodedText) => {
+          console.log("Barcode terdeteksi:", decodedText);
+          document.getElementById("barcodeInput").value = decodedText;
+          handleBarcodeInput();
+          
+          setTimeout(() => {
+            document.getElementById("qtyInput").focus();
+          }, 100);
+        };
+        
+        await scanner.start(
+          currentCameraId,
+          config,
+          qrCodeSuccessCallback,
+          () => {}
+        );
+        
+        document.getElementById("cameraStatus").textContent = 
+          `Kamera aktif (${cameras[nextCameraIndex].label || 'Kamera ' + (nextCameraIndex + 1)})`;
+          
+      } catch (err) {
+        console.error("Error switching camera:", err);
+        alert("Gagal mengganti kamera: " + err.message);
+      }
+    }
+
     function exportToExcel() {
       if (dataScan.length === 0) {
         alert("Tidak ada data untuk diexport!");
@@ -2425,6 +1425,50 @@ WITH CHECK (true);`;
       XLSX.writeFile(wb, filename);
     }
 
+    async function saveToSupabase() {
+      if (!supabaseClient) {
+        alert("Silakan konfigurasi Supabase terlebih dahulu.");
+        showSupabaseConfig();
+        return;
+      }
+      
+      if (dataScan.length === 0) {
+        alert("Tidak ada data untuk disimpan!");
+        return;
+      }
+      
+      if (!confirm(`Simpan ${dataScan.length} data ke Supabase?`)) {
+        return;
+      }
+      
+      try {
+        // Kirim data ke Supabase
+        const { data, error } = await supabaseClient
+          .from('stok_opname_scans')
+          .insert(dataScan.map(item => ({
+            ...item,
+            scanned_at: new Date().toISOString()
+          })));
+        
+        if (error) {
+          throw error;
+        }
+        
+        alert(`✅ ${dataScan.length} data berhasil disimpan ke Supabase!`);
+        
+        // Optional: Kosongkan data setelah disimpan
+        if (confirm("Kosongkan data lokal setelah disimpan ke Supabase?")) {
+          dataScan = [];
+          saveDataToLocalStorage();
+          updateTable();
+        }
+        
+      } catch (error) {
+        console.error("Error saving to Supabase:", error);
+        alert(`❌ Gagal menyimpan ke Supabase: ${error.message}`);
+      }
+    }
+
     function hapusSemuaData() {
       if (dataScan.length === 0 && uploadedItems.length === 0) {
         alert("Tidak ada data untuk dihapus!");
@@ -2437,7 +1481,7 @@ WITH CHECK (true);`;
         saveDataToLocalStorage();
         updateTable();
         updateUploadedItemsTable();
-        alert("✅ Semua data berhasil dihapus!");
+        alert("Semua data berhasil dihapus!");
       }
     }
 
@@ -2464,65 +1508,20 @@ WITH CHECK (true);`;
             tab.classList.remove('active');
           });
           this.classList.add('active');
-          
-          // Jika berpindah ke tab scan, matikan kamera jika aktif
-          if (tabId === 'uploadTab' && isCameraActive) {
-            stopScanner();
-          }
         });
       });
       
-      // Scan Tab - Scanner Controls
-      document.getElementById('scannerButton')?.addEventListener('click', toggleScannerUI);
-      document.getElementById('stopScannerButton')?.addEventListener('click', stopScanner);
-      
-      // Camera selector change
-      document.getElementById('cameraSelect')?.addEventListener('change', function() {
-        selectedCameraId = this.value;
-        // Restart scanner if active
-        if (isCameraActive) {
-          stopScanner().then(() => {
-            setTimeout(() => startScanner(), 500);
-          });
-        }
-      });
-      
-      // Manual barcode input
-      document.getElementById('manualAddBtn')?.addEventListener('click', addBarcodeManual);
-      document.getElementById('manualBarcodeInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          addBarcodeManual();
-        }
-      });
-      
-      // Lokasi buttons
+      // Scan Tab
       document.getElementById('lockLokasiBtn')?.addEventListener('click', lockLokasi);
       document.getElementById('ubahLokasiBtn')?.addEventListener('click', ubahLokasi);
-      
-      // File upload
       document.getElementById('uploadFile')?.addEventListener('change', handleFileUpload);
       document.getElementById('uploadFileBtn')?.addEventListener('click', () => {
         document.getElementById('uploadFile').click();
       });
-      
-      // Barcode input handling
       document.getElementById('barcodeInput')?.addEventListener('input', handleBarcodeInput);
-      document.getElementById('barcodeInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          tambahData();
-        }
-      });
-      
-      // Tambah data button
+      document.getElementById('scannerButton')?.addEventListener('click', toggleScanner);
+      document.getElementById('switchCameraBtn')?.addEventListener('click', switchCamera);
       document.getElementById('tambahDataBtn')?.addEventListener('click', tambahData);
-      document.getElementById('qtyInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          tambahData();
-        }
-      });
       
       // Upload Tab
       document.getElementById('lockUploadLokasiBtn')?.addEventListener('click', lockUploadLokasi);
@@ -2574,6 +1573,21 @@ WITH CHECK (true);`;
         }
       });
       
+      // Allow Enter key to add data
+      document.getElementById('barcodeInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          tambahData();
+        }
+      });
+      
+      document.getElementById('qtyInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          tambahData();
+        }
+      });
+      
       // Close modal when clicking outside
       window.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal')) {
@@ -2581,29 +1595,18 @@ WITH CHECK (true);`;
         }
       });
       
-      // Adjust UI on resize
-      window.addEventListener('resize', adjustForMobile);
-      
-      // Get available cameras on load
-      setTimeout(() => {
-        getCameras();
-      }, 1000);
-      
-      // Handle page visibility change (pause scanner when tab not active)
+      // Handle page visibility change (tab switching)
       document.addEventListener('visibilitychange', function() {
-        if (document.hidden && isCameraActive) {
-          // Optional: pause scanner when tab is not active
-          console.log("Tab tidak aktif, pertimbangkan untuk pause scanner");
-        }
-      });
-      
-      // Handle beforeunload (clean up scanner)
-      window.addEventListener('beforeunload', function() {
-        if (isCameraActive) {
-          // Try to stop scanner
-          if (scanner && scanner.stop) {
-            scanner.stop().catch(console.error);
-          }
+        if (document.hidden && scanner) {
+          // Hentikan scanner saat tab tidak aktif
+          scanner.stop().then(() => {
+            scanner = null;
+            document.getElementById("scannerButton").textContent = "📷 Aktifkan Kamera";
+            document.getElementById("cameraStatus").textContent = "Kamera tidak aktif";
+            document.getElementById("cameraStatus").className = "camera-status inactive";
+            document.getElementById("reader").style.display = "none";
+            document.getElementById("switchCameraBtn").style.display = 'none';
+          }).catch(console.error);
         }
       });
     }
