@@ -6,6 +6,7 @@
   <title>Scanner Stok Barang</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: Arial; padding: 20px; background: #f8f8f8; }
     label, input, button { margin: 5px 0; display: block; }
@@ -22,19 +23,7 @@
     .tab.active { background: #fff; border-bottom: 2px solid #4CAF50; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    /* Atur lebar kolom */
-    th:nth-child(1), td:nth-child(1) { width: 15%; }  /* Barcode */
-    th:nth-child(2), td:nth-child(2) { width: 55%; }  /* Nama Barang panjang */
-    th:nth-child(3), td:nth-child(3) { width: 10%; }  /* Qty kecil */
-    th:nth-child(4), td:nth-child(4) { width: 10%; }  /* Aksi */
-
-    /* Atur ukuran input qty */
-    td:nth-child(3) input {
-      width: 60px;   /* Kecil */
-      text-align: center;
-    }
     
-    /* Modal konfirmasi */
     .modal {
       display: none;
       position: fixed;
@@ -61,56 +50,255 @@
       gap: 10px;
       margin-top: 20px;
     }
+    
+    .user-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .user-button {
+      padding: 8px 12px;
+      background: #e0e0e0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .user-button.active {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .camera-status {
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .camera-status.active {
+      background: #d4edda;
+      color: #155724;
+    }
+    .camera-status.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .progress-bar-container {
+      width: 100%;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      margin: 10px 0;
+      display: none;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 20px;
+      background-color: #4CAF50;
+      border-radius: 5px;
+      text-align: center;
+      color: white;
+      line-height: 20px;
+      transition: width 0.3s ease;
+    }
+    
+    button {
+      cursor: pointer;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .modal-content.long {
+      max-height: 80vh;
+      overflow-y: auto;
+      max-width: 600px;
+    }
+    
+    #supabaseStatus {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      display: none;
+      font-size: 14px;
+    }
+    
+    .connection-test {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .test-btn {
+      background-color: #8B5CF6;
+      color: white;
+    }
+    
+    .status-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    
+    .status-connected {
+      background-color: #10B981;
+    }
+    
+    .status-disconnected {
+      background-color: #EF4444;
+    }
+    
+    .status-unknown {
+      background-color: #F59E0B;
+    }
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
   <h2>Scanner Stok Opname Goto Living</h2>
-
-  <!-- Modal Konfirmasi -->
-  <div id="confirmModal" class="modal">
+  
+  <!-- Status Koneksi Supabase -->
+  <div id="supabaseStatus">
+    <span id="supabaseStatusText"></span>
+  </div>
+  
+  <!-- Modal Supabase Settings -->
+  <div id="supabaseModal" class="modal">
     <div class="modal-content">
-      <h3>Konfirmasi</h3>
-      <p>Apakah Anda yakin ingin meninggalkan halaman ini? Semua data yang belum disimpan akan hilang.</p>
+      <h3>Konfigurasi Supabase</h3>
+      <p>Masukkan kredensial Supabase Anda:</p>
+      <label>URL Supabase:</label>
+      <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co" />
+      <label>API Key:</label>
+      <input type="password" id="supabaseKey" placeholder="Your API Key" />
       <div class="modal-buttons">
-        <button onclick="confirmLeave(true)" style="background-color: #f44336; color: white;">Ya, Keluar</button>
-        <button onclick="confirmLeave(false)" style="background-color: #4CAF50; color: white;">Tidak, Tetap</button>
+        <button id="saveSupabaseConfigBtn" style="background-color: #4CAF50; color: white;">Simpan</button>
+        <button id="cancelSupabaseConfigBtn" style="background-color: #f44336; color: white;">Batal</button>
+      </div>
+      <div class="connection-test">
+        <button id="testConnectionBtn" class="test-btn">Test Koneksi</button>
+        <span id="connectionTestResult" style="font-size: 12px;"></span>
       </div>
     </div>
   </div>
 
+  <!-- Modal Pilih Lokasi -->
+  <div id="locationModal" class="modal">
+    <div class="modal-content long">
+      <h3>Ambil Data per Lokasi</h3>
+      <p>Pilih lokasi untuk mengambil data dan mengisi qty:</p>
+      
+      <div id="locationList" class="user-list">
+        <!-- Lokasi akan dimuat di sini -->
+      </div>
+      
+      <div style="margin: 15px 0;">
+        <label>Filter Lokasi:</label>
+        <input type="text" id="filterLocation" placeholder="Cari lokasi..." style="width: 100%; padding: 8px; margin-top: 5px;" />
+      </div>
+      
+      <div id="progressBarContainer" class="progress-bar-container">
+        <div class="progress-bar" id="progressBar">0%</div>
+      </div>
+      
+      <div id="loadingStatus" style="margin: 10px 0; padding: 10px; text-align: center; display: none;">
+        <div>Memuat data...</div>
+        <div id="loadingDetails" style="font-size: 12px; color: #666;"></div>
+      </div>
+      
+      <div id="locationDataInfo" style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px; display: none;">
+        <div id="selectedLocationInfo"></div>
+        <div id="locationItemCount" style="font-size: 12px; color: #666;"></div>
+      </div>
+      
+      <div class="modal-buttons">
+        <button id="loadLocationDataBtn" style="background-color: #4CAF50; color: white; display: none;">Muat Data</button>
+        <button id="closeLocationModalBtn" style="background-color: #f44336; color: white;">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Isi Qty per Item -->
+  <div id="qtyModal" class="modal">
+    <div class="modal-content long">
+      <h3>Isi Qty untuk <span id="modalLocationName"></span></h3>
+      
+      <div style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <div id="currentLocationInfo"></div>
+          <button id="selectAllBtn" style="background-color: #2196F3; color: white; padding: 5px 10px;">Pilih Semua</button>
+        </div>
+      </div>
+      
+      <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
+        <table id="locationItemsTable" style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #f5f5f5; position: sticky; top: 0;">
+              <th style="padding: 8px; border-bottom: 2px solid #ddd; width: 50px;">
+                <input type="checkbox" id="selectAllCheckbox" />
+              </th>
+              <th style="padding: 8px; border-bottom: 2px solid #ddd;">Nama</th>
+              <th style="padding: 8px; border-bottom: 2px solid #ddd;">Barcode</th>
+              <th style="padding: 8px; border-bottom: 2px solid #ddd; width: 120px;">Qty</th>
+            </tr>
+          </thead>
+          <tbody id="locationItemsBody">
+            <!-- Data akan dimuat di sini -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div style="margin-top: 15px; text-align: center;">
+        <div id="selectedCount" style="font-size: 14px; color: #666; margin-bottom: 10px;"></div>
+        <div class="modal-buttons">
+          <button id="saveQtyBtn" style="background-color: #4CAF50; color: white;">Simpan ke Data Scan</button>
+          <button id="closeQtyModalBtn" style="background-color: #f44336; color: white;">Batal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Container -->
   <div class="tab-container">
-    <div class="tab active" onclick="openTab('scanTab')">Mode Scan</div>
-    <div class="tab" onclick="openTab('uploadTab')">Mode Upload Data</div>
+    <div class="tab active" data-tab="scanTab">Mode Scan</div>
+    <div class="tab" data-tab="uploadTab">Mode Upload Data</div>
   </div>
 
   <!-- Scan Tab -->
   <div id="scanTab" class="tab-content active">
+    <label>User:</label>
+    <input type="text" id="userInput" placeholder="Nama user" value="User 1" />
+    
     <label>Nama Lokasi:</label>
     <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
     <div class="lokasi-buttons">
-      <button onclick="lockLokasi()">🔒Kunci Lokasi</button>
-      <button onclick="ubahLokasi()">🔓Ubah Lokasi</button>
+      <button id="lockLokasiBtn">🔒Kunci Lokasi</button>
+      <button id="ubahLokasiBtn">🔓Ubah Lokasi</button>
     </div>
 
     <hr>
 
     <label>📤Upload File Data Barang (CSV/XLSX):</label>
     <input type="file" id="uploadFile" accept=".csv, .xlsx" />
-    <button onclick="handleFileUpload()">Upload</button>
+    <button id="uploadFileBtn">Upload</button>
 
     <hr>
 
     <label>Scan Barcode:</label>
     <input type="text" id="barcodeInput" placeholder="Scan barcode..." autofocus />
-    <button onclick="startScanner()">📷 Scan Kamera</button>
+    <button id="scannerButton">📷 Aktifkan Kamera</button>
+    <div id="cameraStatus" class="camera-status inactive">Kamera tidak aktif</div>
     <div id="reader"></div>
 
-    <label>Nama Barang:</label>
+    <label>Nama:</label>
     <input type="text" id="namaBarangInput" disabled />
     <label>Qty:</label>
     <input type="number" id="qtyInput" placeholder="Jumlah..." />
-    <button onclick="tambahData()">Tambah</button>
+    <button id="tambahDataBtn">Tambah</button>
 
     <hr>
 
@@ -118,9 +306,10 @@
     <table id="dataTable">
       <thead>
         <tr>
+          <th>User</th>
           <th>Lokasi</th>
           <th>Barcode</th>
-          <th>Nama Barang</th>
+          <th>Nama</th>
           <th>Qty</th>
           <th>Aksi</th>
         </tr>
@@ -131,18 +320,21 @@
 
   <!-- Upload Data Tab -->
   <div id="uploadTab" class="tab-content">
+    <label>User:</label>
+    <input type="text" id="uploadUserInput" placeholder="Nama user" value="User 1" />
+    
     <label>Nama Lokasi:</label>
     <input type="text" id="uploadLokasiInput" placeholder="Contoh: Area A" />
     <div class="lokasi-buttons">
-      <button onclick="lockUploadLokasi()">🔒Kunci Lokasi</button>
-      <button onclick="ubahUploadLokasi()">🔓Ubah Lokasi</button>
+      <button id="lockUploadLokasiBtn">🔒Kunci Lokasi</button>
+      <button id="ubahUploadLokasiBtn">🔓Ubah Lokasi</button>
     </div>
 
     <hr>
 
     <label>📤Upload File Data Barang (CSV/XLSX):</label>
     <input type="file" id="bulkUploadFile" accept=".csv, .xlsx" />
-    <button onclick="handleBulkUpload()">Upload Data</button>
+    <button id="bulkUploadBtn">Upload Data</button>
 
     <hr>
 
@@ -151,7 +343,7 @@
       <thead>
         <tr>
           <th>Barcode</th>
-          <th>Nama Barang</th>
+          <th>Nama</th>
           <th>Qty</th>
           <th>Aksi</th>
         </tr>
@@ -160,387 +352,100 @@
     </table>
 
     <div class="button-group" style="margin-top: 20px;">
-      <button onclick="saveUploadedData()" style="background-color: #4CAF50; color: white;">Simpan Data</button>
-      <button onclick="clearUploadedData()" style="background-color: #f44336; color: white;">Hapus Data</button>
+      <button id="saveUploadedDataBtn" style="background-color: #4CAF50; color: white;">Simpan Data</button>
+      <button id="clearUploadedDataBtn" style="background-color: #f44336; color: white;">Hapus Data</button>
     </div>
   </div>
 
+  <!-- Main Buttons -->
   <div class="button-group">
-    <button onclick="exportData()">Export File</button>
-    <button onclick="saveToGoogleSheet()" style="background-color: #34a853; color: white;">Simpan ke Google Sheet</button>
-    <button onclick="hapusSemuaData()" style="background-color: red; color: white;">Hapus Semua Data</button>
+    <button id="exportDataBtn">Download Data (Excel)</button>
+    <button id="showLocationDataBtn" style="background-color: #10b981; color: white;">Ambil Data per Lokasi</button>
+    <button id="saveToSupabaseBtn" style="background-color: #3b82f6; color: white;">Simpan ke Supabase</button>
+    <button id="showSupabaseConfigBtn" style="background-color: #6b7280; color: white;">Supabase Settings</button>
+    <button id="testSupabaseBtn" style="background-color: #8B5CF6; color: white;">Test Koneksi Supabase</button>
+    <button id="hapusSemuaDataBtn" style="background-color: red; color: white;">Hapus Semua Data</button>
   </div>
 
   <script>
+    // =============== VARIABEL GLOBAL ===============
     let dataBarang = {};
-    let dataScan = JSON.parse(localStorage.getItem("dataScan")) || [];
+    let dataScan = [];
     let lokasiTerkunci = false;
     let uploadLokasiTerkunci = false;
-    let scanner;
-    let uploadedItems = JSON.parse(localStorage.getItem("uploadedItems")) || [];
-    let shouldConfirmLeave = false;
+    let scanner = null;
+    let uploadedItems = [];
+    let supabaseClient = null;
+    let isFetchingData = false;
 
-    // Ganti dengan ID Spreadsheet Anda
-    const SPREADSHEET_ID = '1dtHGZesUkrZ5M81145ghA0vRDFWb5c4Xm6MwBGFOuAc';
-    const SHEET_NAME = 'Sheet1';
-    
-    // URL Apps Script deployment Anda
-    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyv0Hjs7qGztnkIhXXB9EbSbhHKJbqejNrxUHZhmVqHKs7l0SNmAF5L5gsHVDLgIKCT/exec';
-
-    // Fungsi untuk menampilkan modal konfirmasi
-    function showConfirmModal() {
-      document.getElementById('confirmModal').style.display = 'block';
-      return new Promise((resolve) => {
-        window.resolveConfirmLeave = resolve;
-      });
-    }
-
-    // Fungsi untuk menangani hasil konfirmasi
-    function confirmLeave(shouldLeave) {
-      document.getElementById('confirmModal').style.display = 'none';
-      if (window.resolveConfirmLeave) {
-        window.resolveConfirmLeave(shouldLeave);
-      }
-    }
-
-    // Event listener untuk beforeunload
-    window.addEventListener('beforeunload', (event) => {
-      if (shouldConfirmLeave) {
-        event.preventDefault();
-        event.returnValue = '';
-        return '';
-      }
-    });
-
-    // Event listener untuk unload
-    window.addEventListener('unload', () => {
-      // Reset flag saat halaman benar-benar di-unload
-      shouldConfirmLeave = false;
-    });
-
-    // Intercept semua link dan form yang menyebabkan navigasi
-    document.addEventListener('click', (e) => {
-      const target = e.target.closest('a') || e.target.closest('button');
-      if (target && (target.tagName === 'A' || target.tagName === 'BUTTON')) {
-        if (shouldConfirmLeave && !target.hasAttribute('data-safe')) {
-          e.preventDefault();
-          showConfirmModal().then((shouldLeave) => {
-            if (shouldLeave) {
-              shouldConfirmLeave = false;
-              if (target.tagName === 'A') {
-                window.location.href = target.href;
-              } else {
-                target.click();
-              }
-            }
-          });
+    // =============== FUNGSI INISIALISASI ===============
+    function initApp() {
+      console.log('Initializing app...');
+      
+      // Load data dari localStorage
+      try {
+        const savedDataScan = localStorage.getItem("dataScan");
+        const savedUploadedItems = localStorage.getItem("uploadedItems");
+        
+        if (savedDataScan) {
+          dataScan = JSON.parse(savedDataScan);
         }
+        
+        if (savedUploadedItems) {
+          uploadedItems = JSON.parse(savedUploadedItems);
+        }
+      } catch (error) {
+        console.error("Error loading from localStorage:", error);
       }
-    });
-
-    function saveDataToLocalStorage() {
-      localStorage.setItem("dataScan", JSON.stringify(dataScan));
-      localStorage.setItem("uploadedItems", JSON.stringify(uploadedItems));
-      shouldConfirmLeave = (uploadedItems.length > 0);
-    }
-
-    function loadDataFromLocalStorage() {
+      
       updateTable();
       updateUploadedItemsTable();
       
-      // Set flag konfirmasi berdasarkan ada tidaknya data yang belum disimpan
-      shouldConfirmLeave = (uploadedItems.length > 0);
-    }
-
-    function openTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.getElementById(tabId).classList.add('active');
+      // Cek konfigurasi Supabase
+      const supabaseUrl = localStorage.getItem("supabaseUrl");
+      const supabaseKey = localStorage.getItem("supabaseKey");
       
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      event.currentTarget.classList.add('active');
-    }
-
-    function lockLokasi() {
-      const lokasi = document.getElementById("lokasiInput");
-      if (lokasi.value.trim() === "") {
-        alert("Masukkan nama lokasi terlebih dahulu.");
-        return;
+      if (supabaseUrl && supabaseKey) {
+        initSupabaseClient(supabaseUrl, supabaseKey);
       }
-      lokasi.disabled = true;
-      lokasiTerkunci = true;
-      alert("Lokasi dikunci. Silakan mulai scan.");
-    }
-
-    function ubahLokasi() {
-      const lokasi = document.getElementById("lokasiInput");
-      lokasi.disabled = false;
-      lokasiTerkunci = false;
-      alert("Lokasi sekarang bisa diedit kembali.");
-    }
-
-    function lockUploadLokasi() {
-      const lokasi = document.getElementById("uploadLokasiInput");
-      if (lokasi.value.trim() === "") {
-        alert("Masukkan nama lokasi terlebih dahulu.");
-        return;
-      }
-      lokasi.disabled = true;
-      uploadLokasiTerkunci = true;
-      alert("Lokasi dikunci. Silakan upload data.");
-    }
-
-    function ubahUploadLokasi() {
-      const lokasi = document.getElementById("uploadLokasiInput");
-      lokasi.disabled = false;
-      uploadLokasiTerkunci = false;
-      alert("Lokasi sekarang bisa diedit kembali.");
-    }
-
-    function handleFileUpload() {
-      const fileInput = document.getElementById("uploadFile");
-      const file = fileInput.files[0];
-
-      if (!file) {
-        alert("Pilih file terlebih dahulu.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(sheet);
-
-          let count = 0;
-          json.forEach(item => {
-            const keys = Object.keys(item);
-            const barcodeKey = keys.find(k => k.toLowerCase().includes("barcode"));
-            const namaKey = keys.find(k => k.toLowerCase().includes("nama"));
-
-            if (barcodeKey && namaKey) {
-              const barcode = item[barcodeKey]?.toString().trim();
-              const nama = item[namaKey]?.toString().trim();
-              if (barcode && nama) {
-                dataBarang[barcode] = nama;
-                count++;
-              }
-            }
-          });
-
-          alert(`✅ Berhasil upload ${count} data barang.`);
-        } catch (error) {
-          alert("❌ Gagal membaca file: " + error.message);
-        }
-      };
-      reader.onerror = function(error) {
-        alert("❌ Gagal membaca file.");
-        console.error("FileReader error:", error);
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    function handleBulkUpload() {
-      if (!uploadLokasiTerkunci) {
-        alert("Kunci lokasi terlebih dahulu.");
-        return;
-      }
-
-      const fileInput = document.getElementById("bulkUploadFile");
-      const file = fileInput.files[0];
-
-      if (!file) {
-        alert("Pilih file terlebih dahulu.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(sheet);
-
-          uploadedItems = [];
-          let count = 0;
-          
-          json.forEach(item => {
-            const keys = Object.keys(item);
-            const barcodeKey = keys.find(k => k.toLowerCase().includes("barcode"));
-            const namaKey = keys.find(k => k.toLowerCase().includes("nama"));
-            const qtyKey = keys.find(k => k.toLowerCase().includes("qty") || k.toLowerCase().includes("quantity"));
-
-            if (barcodeKey && namaKey) {
-              const barcode = item[barcodeKey]?.toString().trim();
-              const nama = item[namaKey]?.toString().trim();
-              let qty = 0;
-              
-              if (qtyKey) {
-                qty = parseInt(item[qtyKey]) || 0;
-              }
-
-              if (barcode && nama) {
-                uploadedItems.push({
-                  barcode: barcode,
-                  nama: nama,
-                  qty: qty
-                });
-                count++;
-              }
-            }
-          });
-
-          updateUploadedItemsTable();
-          saveDataToLocalStorage();
-          alert(`✅ Berhasil upload ${count} data barang.`);
-        } catch (error) {
-          alert("❌ Gagal membaca file: " + error.message);
-        }
-      };
-      reader.onerror = function(error) {
-        alert("❌ Gagal membaca file.");
-        console.error("FileReader error:", error);
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    function updateUploadedItemsTable() {
-      const tbody = document.getElementById("uploadedItemsBody");
-      tbody.innerHTML = "";
-
-      uploadedItems.forEach((item, index) => {
-        const row = tbody.insertRow();
-        row.insertCell().innerText = item.barcode;
-        row.insertCell().innerText = item.nama;
-        
-        const qtyCell = row.insertCell();
-        const qtyInput = document.createElement("input");
-        qtyInput.type = "number";
-        qtyInput.value = item.qty;
-        qtyInput.onchange = (e) => {
-          uploadedItems[index].qty = parseInt(e.target.value) || 0;
-          saveDataToLocalStorage();
-        };
-        qtyCell.appendChild(qtyInput);
-
-        const actionCell = row.insertCell();
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Hapus";
-        deleteBtn.onclick = () => {
-          uploadedItems.splice(index, 1);
-          updateUploadedItemsTable();
-          saveDataToLocalStorage();
-        };
-        actionCell.appendChild(deleteBtn);
-      });
-    }
-
-    function saveUploadedData() {
-      if (!uploadLokasiTerkunci) {
-        alert("Kunci lokasi terlebih dahulu.");
-        return;
-      }
-
-      if (uploadedItems.length === 0) {
-        alert("Tidak ada data untuk disimpan.");
-        return;
-      }
-
-      const lokasi = document.getElementById("uploadLokasiInput").value;
       
-      uploadedItems.forEach(item => {
-        const index = dataScan.findIndex(scan => scan.barcode === item.barcode && scan.lokasi === lokasi);
-        
-        if (index > -1) {
-          dataScan[index].qty += item.qty;
-        } else {
-          dataScan.push({
-            lokasi: lokasi,
-            barcode: item.barcode,
-            nama: item.nama,
-            qty: item.qty
-          });
-        }
-      });
-
-      saveDataToLocalStorage();
-      updateTable();
-      alert(`✅ Berhasil menyimpan ${uploadedItems.length} data barang.`);
-      uploadedItems = [];
-      updateUploadedItemsTable();
-      saveDataToLocalStorage();
+      // Setup event listeners
+      setupEventListeners();
+      
+      // Update status Supabase
+      setTimeout(() => {
+        updateSupabaseStatus();
+      }, 1000);
+      
+      // Fokus ke input barcode
+      setTimeout(() => {
+        const barcodeInput = document.getElementById("barcodeInput");
+        if (barcodeInput) barcodeInput.focus();
+      }, 500);
+      
+      console.log('App initialized successfully');
     }
 
-    function clearUploadedData() {
-      if (confirm("Yakin ingin menghapus semua data yang diupload?")) {
-        uploadedItems = [];
-        updateUploadedItemsTable();
-        saveDataToLocalStorage();
-      }
-    }
-
-    document.getElementById("barcodeInput").addEventListener("input", function() {
-      const barcode = this.value.trim();
-      const nama = dataBarang[barcode];
-      document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
-    });
-
-    function tambahData() {
-      if (!lokasiTerkunci) {
-        alert("Kunci lokasi terlebih dahulu.");
-        return;
-      }
-
-      const lokasi = document.getElementById("lokasiInput").value;
-      const barcode = document.getElementById("barcodeInput").value.trim();
-      const nama = document.getElementById("namaBarangInput").value;
-      const qty = parseInt(document.getElementById("qtyInput").value);
-
-      if (!barcode || isNaN(qty)) {
-        alert("Isi barcode dan qty.");
-        return;
-      }
-
-      const index = dataScan.findIndex(item => item.barcode === barcode && item.lokasi === lokasi);
-      if (index > -1) {
-        dataScan[index].qty += qty;
-      } else {
-        dataScan.push({ 
-          lokasi, 
-          barcode, 
-          nama: nama || "Barang tidak dikenal", 
-          qty 
-        });
-      }
-
-      saveDataToLocalStorage();
-      document.getElementById("barcodeInput").value = "";
-      document.getElementById("namaBarangInput").value = "";
-      document.getElementById("qtyInput").value = "";
-      document.getElementById("barcodeInput").focus();
-      updateTable();
-    }
-
+    // =============== FUNGSI TABEL ===============
     function updateTable() {
       const tbody = document.querySelector("#dataTable tbody");
+      if (!tbody) return;
+      
       tbody.innerHTML = "";
 
       dataScan.forEach((item, index) => {
         const row = tbody.insertRow();
+        row.insertCell().innerText = item.user || "Unknown";
         row.insertCell().innerText = item.lokasi;
         row.insertCell().innerText = item.barcode;
         row.insertCell().innerText = item.nama;
         row.insertCell().innerText = item.qty;
 
         const aksiCell = row.insertCell();
+        
         const editBtn = document.createElement("button");
-        editBtn.textContent = "Edit Qty";
+        editBtn.textContent = "Edit";
+        editBtn.style.marginRight = "5px";
         editBtn.onclick = () => {
           const newQty = prompt("Masukkan Qty baru:", item.qty);
           if (newQty !== null && !isNaN(newQty)) {
@@ -553,7 +458,8 @@
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "Hapus";
-        delBtn.style.marginLeft = "5px";
+        delBtn.style.backgroundColor = "#f44336";
+        delBtn.style.color = "white";
         delBtn.onclick = () => {
           if (confirm("Yakin ingin menghapus baris ini?")) {
             dataScan.splice(index, 1);
@@ -565,119 +471,1191 @@
       });
     }
 
-    function exportData() {
-      if (dataScan.length === 0) {
-        alert("Tidak ada data untuk disimpan.");
-        return;
-      }
+    function updateUploadedItemsTable() {
+      const tbody = document.getElementById("uploadedItemsBody");
+      if (!tbody) return;
+      
+      tbody.innerHTML = "";
 
-      const ws = XLSX.utils.json_to_sheet(dataScan);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Stok Barang");
-      XLSX.writeFile(wb, "stok_barang.xlsx");
+      uploadedItems.forEach((item, index) => {
+        const row = tbody.insertRow();
+        row.insertCell().innerText = item.barcode;
+        row.insertCell().innerText = item.nama;
+        
+        const qtyCell = row.insertCell();
+        const qtyInput = document.createElement("input");
+        qtyInput.type = "number";
+        qtyInput.value = item.qty;
+        qtyInput.style.width = "60px";
+        qtyInput.onchange = (e) => {
+          uploadedItems[index].qty = parseInt(e.target.value) || 0;
+          saveDataToLocalStorage();
+        };
+        qtyCell.appendChild(qtyInput);
+
+        const actionCell = row.insertCell();
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Hapus";
+        deleteBtn.onclick = () => {
+          if (confirm("Yakin ingin menghapus item ini?")) {
+            uploadedItems.splice(index, 1);
+            updateUploadedItemsTable();
+            saveDataToLocalStorage();
+          }
+        };
+        actionCell.appendChild(deleteBtn);
+      });
     }
 
-    function saveToGoogleSheet() {
-      if (dataScan.length === 0) {
-        alert("Tidak ada data untuk disimpan.");
-        return;
+    function saveDataToLocalStorage() {
+      try {
+        localStorage.setItem("dataScan", JSON.stringify(dataScan || []));
+        localStorage.setItem("uploadedItems", JSON.stringify(uploadedItems || []));
+      } catch (error) {
+        console.error("Error saving to localStorage:", error);
       }
+    }
 
-      const lokasi = document.getElementById("lokasiInput").value;
-      if (!lokasiTerkunci || !lokasi) {
-        alert("Kunci lokasi terlebih dahulu dan pastikan lokasi sudah diisi.");
-        return;
-      }
-
-      const dataToSend = {
-        spreadsheetId: SPREADSHEET_ID,
-        sheetName: SHEET_NAME,
-        data: dataScan.map(item => ({
-          ...item,
-          timestamp: new Date().toISOString()
-        }))
-      };
-
-      // Tampilkan loading indicator
-      const saveBtn = document.querySelector('button[onclick="saveToGoogleSheet()"]');
-      const originalText = saveBtn.textContent;
-      saveBtn.textContent = "Menyimpan...";
-      saveBtn.disabled = true;
-
-      fetch(APP_SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+    // =============== FUNGSI SUPABASE ===============
+    function initSupabaseClient(url, key) {
+      try {
+        if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
+          throw new Error('URL Supabase tidak valid.');
         }
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
-          alert(`✅ Data berhasil disimpan ke Google Sheet! ${data.rowsAdded} baris ditambahkan.`);
+        
+        if (key.length < 10) {
+          throw new Error('API Key tidak valid');
+        }
+        
+        supabaseClient = window.supabase.createClient(url, key);
+        console.log("Supabase initialized successfully");
+        return true;
+      } catch (error) {
+        console.error("Error initializing Supabase:", error);
+        return false;
+      }
+    }
+
+    async function testSupabaseConnection() {
+      if (!supabaseClient) return false;
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('stok_barang')
+          .select('count', { count: 'exact', head: true })
+          .limit(1);
+        
+        if (error) {
+          console.error("Supabase connection test failed:", error);
+          return false;
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("Supabase connection test failed:", error);
+        return false;
+      }
+    }
+
+    async function updateSupabaseStatus() {
+      const statusDiv = document.getElementById('supabaseStatus');
+      const statusText = document.getElementById('supabaseStatusText');
+      
+      if (!statusDiv || !statusText) return;
+      
+      const supabaseUrl = localStorage.getItem("supabaseUrl");
+      const supabaseKey = localStorage.getItem("supabaseKey");
+      
+      if (!supabaseUrl || !supabaseKey) {
+        statusDiv.style.display = 'none';
+        return;
+      }
+      
+      if (!supabaseClient) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.backgroundColor = '#f8d7da';
+        statusDiv.style.color = '#721c24';
+        statusText.innerHTML = '⚠️ Supabase belum dikonfigurasi dengan benar';
+        return;
+      }
+      
+      const isConnected = await testSupabaseConnection();
+      
+      statusDiv.style.display = 'block';
+      if (isConnected) {
+        statusDiv.style.backgroundColor = '#d4edda';
+        statusDiv.style.color = '#155724';
+        statusText.innerHTML = '✅ Terhubung ke Supabase (tabel: stok_barang)';
+      } else {
+        statusDiv.style.backgroundColor = '#f8d7da';
+        statusDiv.style.color = '#721c24';
+        statusText.innerHTML = '❌ Gagal terhubung ke Supabase. Periksa konfigurasi atau buat tabel stok_barang.';
+      }
+    }
+
+    function showSupabaseConfig() {
+      document.getElementById('supabaseUrl').value = localStorage.getItem("supabaseUrl") || "";
+      document.getElementById('supabaseKey').value = localStorage.getItem("supabaseKey") || "";
+      document.getElementById('supabaseModal').style.display = 'block';
+      document.getElementById('connectionTestResult').textContent = '';
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('supabaseUrl').value.trim();
+      const key = document.getElementById('supabaseKey').value.trim();
+      
+      if (!url || !key) {
+        alert("URL dan API Key Supabase harus diisi.");
+        return;
+      }
+      
+      if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
+        alert("URL Supabase harus dalam format: https://your-project.supabase.co");
+        return;
+      }
+      
+      localStorage.setItem("supabaseUrl", url);
+      localStorage.setItem("supabaseKey", key);
+      
+      if (initSupabaseClient(url, key)) {
+        alert("✅ Konfigurasi Supabase berhasil disimpan.");
+        updateSupabaseStatus();
+        document.getElementById('supabaseModal').style.display = 'none';
+      }
+    }
+
+    async function testConnectionFromModal() {
+      const url = document.getElementById('supabaseUrl').value.trim();
+      const key = document.getElementById('supabaseKey').value.trim();
+      
+      if (!url || !key) {
+        alert("URL dan API Key harus diisi terlebih dahulu.");
+        return;
+      }
+      
+      const testResult = document.getElementById('connectionTestResult');
+      testResult.textContent = "Menguji koneksi...";
+      testResult.style.color = "#666";
+      
+      try {
+        // Buat client sementara untuk testing
+        const tempClient = window.supabase.createClient(url, key);
+        
+        const { data, error } = await tempClient
+          .from('stok_barang')
+          .select('count', { count: 'exact', head: true })
+          .limit(1);
+        
+        if (error) {
+          testResult.textContent = `❌ Gagal: ${error.message}`;
+          testResult.style.color = "#dc2626";
         } else {
-          alert(`❌ Gagal menyimpan data: ${data.message}`);
+          testResult.textContent = "✅ Koneksi berhasil! Tabel stok_barang dapat diakses.";
+          testResult.style.color = "#16a34a";
         }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert("Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau export manual.");
-      })
-      .finally(() => {
-        saveBtn.textContent = originalText;
-        saveBtn.disabled = false;
-      });
-    }
-
-    function startScanner() {
-      const readerDiv = document.getElementById("reader");
-      readerDiv.style.display = "block";
-
-      if (scanner && scanner.isScanning) {
-        scanner.stop();
+      } catch (error) {
+        testResult.textContent = `❌ Error: ${error.message}`;
+        testResult.style.color = "#dc2626";
       }
-
-      scanner = new Html5Qrcode("reader");
-      scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
-        (decodedText) => {
-          document.getElementById("barcodeInput").value = decodedText;
-          const nama = dataBarang[decodedText];
-          document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
-          scanner.stop().then(() => {
-            readerDiv.innerHTML = "";
-            readerDiv.style.display = "none";
-            document.getElementById("qtyInput").focus();
-          });
-        },
-        (errorMsg) => {
-          // console.log("Scanning...", errorMsg);
-        }
-      ).catch((err) => {
-        alert("Gagal membuka kamera: " + err);
-        readerDiv.style.display = "none";
-      });
     }
 
-    function hapusSemuaData() {
-      if (confirm("Yakin ingin menghapus semua data?")) {
+    function showSupabaseTableCreationGuide() {
+      const sql = `-- Buat tabel stok_barang di Supabase
+CREATE TABLE IF NOT EXISTS public.stok_barang (
+  id BIGSERIAL PRIMARY KEY,
+  user TEXT,
+  lokasi TEXT,
+  barcode TEXT,
+  nama_barang TEXT,
+  qty BIGINT DEFAULT 0,
+  scanned_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Berikan izin akses
+ALTER TABLE public.stok_barang ENABLE ROW LEVEL SECURITY;
+
+-- Buat policy untuk akses
+CREATE POLICY "Enable all access for authenticated users" 
+ON public.stok_barang 
+FOR ALL 
+TO authenticated 
+USING (true) 
+WITH CHECK (true);`;
+      
+      alert(`Untuk membuat tabel, buka Supabase Dashboard -> SQL Editor dan jalankan query berikut:\n\n${sql}`);
+    }
+
+    // =============== FUNGSI AMBIL DATA PER LOKASI ===============
+    async function showLocationDataModal() {
+      if (!supabaseClient) {
+        alert("Silakan konfigurasi Supabase terlebih dahulu.");
+        showSupabaseConfig();
+        return;
+      }
+      
+      if (isFetchingData) {
+        alert("Sedang mengambil data, harap tunggu...");
+        return;
+      }
+      
+      document.getElementById('locationModal').style.display = 'block';
+      await loadAllDataFromSupabase();
+    }
+
+    async function loadAllDataFromSupabase() {
+      if (isFetchingData) return;
+      
+      try {
+        isFetchingData = true;
+        const locationList = document.getElementById('locationList');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const progressBar = document.getElementById('progressBar');
+        const loadingStatus = document.getElementById('loadingStatus');
+        const loadingDetails = document.getElementById('loadingDetails');
+        
+        if (!locationList) return;
+        
+        locationList.innerHTML = '<div style="text-align: center; padding: 20px;">Memuat data dari Supabase...</div>';
+        progressBarContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+        loadingStatus.style.display = 'block';
+        
+        console.log('Memulai pengambilan data dari Supabase...');
+        
+        // Ambil total count terlebih dahulu
+        loadingDetails.textContent = 'Menghitung total data...';
+        const { count, error: countError } = await supabaseClient
+          .from('stok_barang')
+          .select('*', { count: 'exact', head: true });
+        
+        if (countError) {
+          throw countError;
+        }
+        
+        const totalData = count || 0;
+        console.log(`Total data di Supabase: ${totalData}`);
+        loadingDetails.textContent = `Total data: ${totalData.toLocaleString()} item`;
+        
+        if (totalData === 0) {
+          locationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Tidak ada data ditemukan di Supabase.</div>';
+          progressBarContainer.style.display = 'none';
+          loadingStatus.style.display = 'none';
+          isFetchingData = false;
+          return;
+        }
+        
+        // Ambil data dengan pagination
+        const pageSize = 1000;
+        const totalPages = Math.ceil(totalData / pageSize);
+        let allData = [];
+        
+        for (let page = 0; page < totalPages; page++) {
+          const from = page * pageSize;
+          const to = from + pageSize - 1;
+          
+          loadingDetails.textContent = `Mengambil data ${from + 1}-${Math.min(to + 1, totalData)} dari ${totalData}...`;
+          progressBar.style.width = `${((page + 1) / totalPages * 100).toFixed(0)}%`;
+          progressBar.textContent = `${((page + 1) / totalPages * 100).toFixed(0)}%`;
+          
+          console.log(`Mengambil halaman ${page + 1}/${totalPages}...`);
+          
+          const { data, error } = await supabaseClient
+            .from('stok_barang')
+            .select('*')
+            .range(from, to)
+            .order('lokasi', { ascending: true });
+          
+          if (error) {
+            throw error;
+          }
+          
+          if (data && data.length > 0) {
+            allData = allData.concat(data);
+            console.log(`Halaman ${page + 1}: ${data.length} data, total: ${allData.length} data`);
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        console.log(`Total data berhasil diambil: ${allData.length} baris`);
+        
+        if (allData.length === 0) {
+          locationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Tidak ada data ditemukan di Supabase.</div>';
+          progressBarContainer.style.display = 'none';
+          loadingStatus.style.display = 'none';
+          isFetchingData = false;
+          return;
+        }
+        
+        // Kelompokkan data berdasarkan lokasi
+        loadingDetails.textContent = 'Mengelompokkan data berdasarkan lokasi...';
+        progressBar.style.width = '100%';
+        progressBar.textContent = '100%';
+        
+        const groupedData = {};
+        allData.forEach(item => {
+          const location = item.lokasi || 'Tidak Ada Lokasi';
+          if (!groupedData[location]) {
+            groupedData[location] = [];
+          }
+          groupedData[location].push(item);
+        });
+        
+        console.log(`Jumlah lokasi: ${Object.keys(groupedData).length}`);
+        
+        // Tampilkan tombol lokasi
+        locationList.innerHTML = '';
+        const locations = Object.keys(groupedData).sort();
+        
+        // Tambahkan tombol "Semua Lokasi"
+        const allButton = document.createElement('button');
+        allButton.className = 'user-button';
+        allButton.dataset.location = 'Semua Lokasi';
+        allButton.innerHTML = `
+          Semua Lokasi
+          <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
+            ${allData.length.toLocaleString()}
+          </span>
+        `;
+        allButton.onclick = (e) => {
+          selectLocationInModal('Semua Lokasi', allData, e.target);
+        };
+        locationList.appendChild(allButton);
+        
+        // Tambahkan tombol untuk setiap lokasi
+        locations.forEach(location => {
+          if (groupedData[location].length > 0) {
+            const button = document.createElement('button');
+            button.className = 'user-button';
+            button.dataset.location = location;
+            button.innerHTML = `
+              ${location} 
+              <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
+                ${groupedData[location].length.toLocaleString()}
+              </span>
+            `;
+            button.onclick = (e) => {
+              selectLocationInModal(location, groupedData[location], e.target);
+            };
+            locationList.appendChild(button);
+          }
+        });
+        
+        // Setup filter
+        const filterInput = document.getElementById('filterLocation');
+        if (filterInput) {
+          filterInput.oninput = function() {
+            const searchTerm = this.value.toLowerCase();
+            const buttons = locationList.querySelectorAll('.user-button');
+            buttons.forEach(button => {
+              const locationName = button.dataset.location.toLowerCase();
+              button.style.display = locationName.includes(searchTerm) ? 'block' : 'none';
+            });
+          };
+        }
+        
+        // Sembunyikan progress bar
+        setTimeout(() => {
+          progressBarContainer.style.display = 'none';
+          loadingStatus.style.display = 'none';
+        }, 1000);
+        
+        // Tampilkan statistik
+        const statsDiv = document.createElement('div');
+        statsDiv.style.marginTop = '10px';
+        statsDiv.style.padding = '10px';
+        statsDiv.style.background = '#e8f5e8';
+        statsDiv.style.borderRadius = '4px';
+        statsDiv.style.fontSize = '12px';
+        statsDiv.innerHTML = `
+          <strong>✅ Data berhasil dimuat!</strong><br>
+          • Total data: ${allData.length.toLocaleString()} item<br>
+          • Lokasi: ${locations.length} lokasi<br>
+          • Data terbaru: ${allData.length > 0 ? new Date(allData[0].created_at || Date.now()).toLocaleDateString('id-ID') : 'N/A'}
+        `;
+        locationList.parentNode.insertBefore(statsDiv, locationList.nextSibling);
+        
+      } catch (error) {
+        console.error('Error loading data:', error);
+        const locationList = document.getElementById('locationList');
+        if (locationList) {
+          locationList.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #f44336;">
+              <h4>Gagal memuat data dari Supabase</h4>
+              <p style="font-size: 12px;">${error.message}</p>
+              <button onclick="showSupabaseTableCreationGuide()" style="margin-top: 10px; padding: 5px 10px; background: #4CAF50; color: white; border: none; border-radius: 4px;">
+                Lihat Panduan Buat Tabel
+              </button>
+            </div>
+          `;
+        }
+        
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const loadingStatus = document.getElementById('loadingStatus');
+        if (progressBarContainer) progressBarContainer.style.display = 'none';
+        if (loadingStatus) loadingStatus.style.display = 'none';
+      } finally {
+        isFetchingData = false;
+      }
+    }
+
+    function selectLocationInModal(location, items, target) {
+      // Update UI
+      const buttons = document.querySelectorAll('#locationList .user-button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      target.classList.add('active');
+      
+      // Tampilkan info lokasi
+      const infoDiv = document.getElementById('locationDataInfo');
+      const infoContent = document.getElementById('selectedLocationInfo');
+      const countDiv = document.getElementById('locationItemCount');
+      const loadBtn = document.getElementById('loadLocationDataBtn');
+      
+      if (infoDiv && infoContent && countDiv && loadBtn) {
+        infoDiv.style.display = 'block';
+        infoContent.innerHTML = `<strong>${location}</strong> dipilih`;
+        countDiv.textContent = `${items.length.toLocaleString()} item ditemukan`;
+        loadBtn.style.display = 'block';
+        
+        // Simpan data lokasi yang dipilih
+        loadBtn.dataset.location = location;
+        loadBtn.dataset.items = JSON.stringify(items);
+      }
+    }
+
+    function loadSelectedLocationData() {
+      const loadBtn = document.getElementById('loadLocationDataBtn');
+      if (!loadBtn || !loadBtn.dataset.location) {
+        alert('Pilih lokasi terlebih dahulu.');
+        return;
+      }
+      
+      const location = loadBtn.dataset.location;
+      const items = JSON.parse(loadBtn.dataset.items);
+      
+      // Tutup modal lokasi
+      document.getElementById('locationModal').style.display = 'none';
+      
+      // Tampilkan modal isi qty
+      showQtyModal(location, items);
+    }
+
+    function showQtyModal(location, items) {
+      const modal = document.getElementById('qtyModal');
+      const locationNameSpan = document.getElementById('modalLocationName');
+      const currentLocationInfo = document.getElementById('currentLocationInfo');
+      const itemsBody = document.getElementById('locationItemsBody');
+      
+      if (!modal || !locationNameSpan || !currentLocationInfo || !itemsBody) return;
+      
+      // Set data lokasi
+      locationNameSpan.textContent = location;
+      currentLocationInfo.innerHTML = `
+        <div>
+          <strong>${location}</strong>
+          <div style="font-size: 12px; color: #666;">${items.length.toLocaleString()} item</div>
+        </div>
+      `;
+      
+      // Isi tabel items (maksimal 500 item untuk performa)
+      itemsBody.innerHTML = '';
+      
+      const displayItems = items.slice(0, 500);
+      
+      if (displayItems.length === 0) {
+        itemsBody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
+              Tidak ada item di lokasi ini
+            </td>
+          </tr>
+        `;
+      } else {
+        if (items.length > 500) {
+          const warningRow = document.createElement('tr');
+          warningRow.innerHTML = `
+            <td colspan="4" style="text-align: center; padding: 10px; background: #fff3cd; color: #856404;">
+              <strong>Info:</strong> Menampilkan 500 item pertama dari ${items.length.toLocaleString()} item total
+            </td>
+          `;
+          itemsBody.appendChild(warningRow);
+        }
+        
+        displayItems.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.style.borderBottom = '1px solid #eee';
+          
+          // Gunakan field yang benar dari database - PERHATIAN: gunakan nama_barang
+          const namaBarang = item.nama_barang || item.nama || item.item_name || 'N/A';
+          const barcodeBarang = item.barcode || item.kode || item.kode_barang || '-';
+          const qtyBarang = item.qty || item.quantity || item.stock || 0;
+          
+          row.innerHTML = `
+            <td style="padding: 8px; text-align: center;">
+              <input type="checkbox" class="item-checkbox" data-index="${index}" />
+            </td>
+            <td style="padding: 8px;">
+              ${namaBarang}
+              ${qtyBarang ? `<div style="font-size: 11px; color: #666;">Stok: ${qtyBarang}</div>` : ''}
+            </td>
+            <td style="padding: 8px; font-family: monospace;">
+              ${barcodeBarang}
+            </td>
+            <td style="padding: 8px;">
+              <input type="number" 
+                     class="item-qty" 
+                     data-index="${index}"
+                     min="0" 
+                     value="0" 
+                     style="width: 80px; padding: 4px; text-align: center;"
+                     placeholder="Qty scan" />
+            </td>
+          `;
+          
+          itemsBody.appendChild(row);
+        });
+      }
+      
+      // Update selected count
+      updateSelectedCount();
+      
+      // Tampilkan modal
+      modal.style.display = 'block';
+    }
+
+    function updateSelectedCount() {
+      const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+      const countDiv = document.getElementById('selectedCount');
+      
+      if (countDiv) {
+        countDiv.textContent = `${checkboxes.length} item dipilih`;
+      }
+    }
+
+    function selectAllItems() {
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+      
+      if (!selectAllCheckbox) return;
+      
+      const isChecked = selectAllCheckbox.checked;
+      itemCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+      });
+      
+      updateSelectedCount();
+    }
+
+    function saveQtyToDataScan() {
+      const locationName = document.getElementById('modalLocationName').textContent;
+      const user = document.getElementById("userInput").value || "Unknown";
+      
+      // Ambil semua baris dari tabel
+      const rows = document.querySelectorAll('#locationItemsBody tr');
+      const selectedItems = [];
+      
+      rows.forEach((row, index) => {
+        const checkbox = row.querySelector('.item-checkbox');
+        const qtyInput = row.querySelector('.item-qty');
+        
+        // Periksa apakah checkbox dicentang
+        if (checkbox && checkbox.checked) {
+          const qty = parseInt(qtyInput.value) || 0;
+          if (qty > 0) {
+            // Ambil data dari baris
+            const cells = row.querySelectorAll('td');
+            
+            // Cell 1: checkbox, Cell 2: nama, Cell 3: barcode, Cell 4: qty input
+            const namaCell = cells[1];
+            const barcodeCell = cells[2];
+            
+            // Ambil teks dari sel, hapus informasi tambahan
+            let namaText = namaCell.textContent;
+            // Hapus "Stok: X" jika ada
+            namaText = namaText.split('Stok:')[0].trim();
+            
+            const barcode = barcodeCell.textContent.trim();
+            
+            // Simpan data item yang dipilih
+            selectedItems.push({
+              barcode: barcode,
+              nama: namaText,
+              qty: qty,
+              lokasi: locationName,
+              user: user
+            });
+          }
+        }
+      });
+      
+      if (selectedItems.length === 0) {
+        alert('Pilih minimal satu item dan isi qty yang valid.');
+        return;
+      }
+      
+      // Simpan ke dataScan
+      let count = 0;
+      selectedItems.forEach(item => {
+        const { barcode, nama, qty, lokasi, user } = item;
+        
+        if (barcode && barcode !== '-' && nama && nama !== 'N/A') {
+          // Cek apakah item sudah ada di dataScan
+          const existingIndex = dataScan.findIndex(scan => 
+            scan.barcode === barcode && 
+            scan.lokasi === lokasi && 
+            scan.user === user
+          );
+          
+          if (existingIndex > -1) {
+            // Update qty jika sudah ada
+            dataScan[existingIndex].qty += qty;
+          } else {
+            // Tambah data baru
+            dataScan.push({
+              user: user,
+              lokasi: lokasi,
+              barcode: barcode,
+              nama: nama,
+              qty: qty
+            });
+          }
+          count++;
+        }
+      });
+      
+      // Update table dan simpan
+      saveDataToLocalStorage();
+      updateTable();
+      
+      // Tutup modal
+      document.getElementById('qtyModal').style.display = 'none';
+      
+      alert(`✅ ${count} item berhasil ditambahkan ke data scan untuk lokasi ${locationName}.`);
+    }
+
+    // =============== FUNGSI SIMPAN KE SUPABASE ===============
+    async function saveToSupabase() {
+      if (!supabaseClient) {
+        alert("Silakan konfigurasi Supabase terlebih dahulu.");
+        showSupabaseConfig();
+        return;
+      }
+      
+      if (dataScan.length === 0) {
+        alert("Tidak ada data untuk disimpan!");
+        return;
+      }
+      
+      if (!confirm(`Simpan ${dataScan.length} data ke tabel stok_barang di Supabase?`)) {
+        return;
+      }
+      
+      // Tampilkan loading
+      const originalText = document.getElementById('saveToSupabaseBtn').textContent;
+      document.getElementById('saveToSupabaseBtn').textContent = 'Menyimpan...';
+      document.getElementById('saveToSupabaseBtn').disabled = true;
+      
+      try {
+        // Siapkan data untuk disimpan - SESUAIKAN DENGAN KOLOM DI SUPABASE
+        const dataToSave = dataScan.map(item => ({
+          user: item.user || "Unknown",
+          lokasi: item.lokasi || "Unknown",
+          barcode: item.barcode || "",
+          nama_barang: item.nama || "", // PERHATIAN: nama_barang (bukan 'nama')
+          qty: item.qty || 0,
+          scanned_at: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        }));
+        
+        console.log("Menyimpan data ke tabel stok_barang:", dataToSave);
+        
+        // Kirim data ke Supabase
+        const { data, error } = await supabaseClient
+          .from('stok_barang')
+          .insert(dataToSave);
+        
+        if (error) {
+          throw error;
+        }
+        
+        alert(`✅ ${dataScan.length} data berhasil disimpan ke tabel stok_barang di Supabase!`);
+        
+        // Kosongkan data setelah disimpan
         dataScan = [];
         saveDataToLocalStorage();
         updateTable();
+        updateSupabaseStatus();
+        
+      } catch (error) {
+        console.error("Error saving to Supabase:", error);
+        
+        // Berikan pesan error yang lebih spesifik
+        let errorMessage = error.message;
+        if (error.message.includes('violates unique constraint')) {
+          errorMessage = "Beberapa data sudah ada di database. Silakan hapus data duplikat terlebih dahulu.";
+        } else if (error.message.includes('permission denied')) {
+          errorMessage = "Izin ditolak. Pastikan API key memiliki hak akses INSERT ke tabel stok_barang.";
+        } else if (error.message.includes('Could not find the table')) {
+          errorMessage = "Tabel 'stok_barang' tidak ditemukan. Silakan buat tabel terlebih dahulu di Supabase.";
+        } else if (error.message.includes('column "nama_barang" of relation "stok_barang" does not exist')) {
+          errorMessage = "Kolom 'nama_barang' tidak ditemukan di tabel. Pastikan struktur tabel sesuai.";
+        }
+        
+        alert(`❌ Gagal menyimpan ke Supabase: ${errorMessage}`);
+        
+        // Tampilkan opsi untuk membuat tabel
+        if (error.message.includes('Could not find the table') || error.message.includes('column') || error.message.includes('does not exist')) {
+          if (confirm("Struktur tabel tidak sesuai. Lihat panduan membuat tabel stok_barang?")) {
+            showSupabaseTableCreationGuide();
+          }
+        }
+        
+      } finally {
+        // Reset tombol
+        document.getElementById('saveToSupabaseBtn').textContent = originalText;
+        document.getElementById('saveToSupabaseBtn').disabled = false;
       }
     }
 
-    // Initialize on load
-    window.onload = function() {
-      loadDataFromLocalStorage();
+    // =============== FUNGSI LAINNYA ===============
+    function lockLokasi() {
+      const lokasiInput = document.getElementById("lokasiInput");
+      if (lokasiInput.value.trim() === "") {
+        alert("Harap isi nama lokasi terlebih dahulu!");
+        return;
+      }
+      lokasiInput.disabled = true;
+      lokasiTerkunci = true;
+      alert("Lokasi berhasil dikunci!");
+    }
+
+    function ubahLokasi() {
+      const lokasiInput = document.getElementById("lokasiInput");
+      lokasiInput.disabled = false;
+      lokasiTerkunci = false;
+      lokasiInput.focus();
+    }
+
+    function lockUploadLokasi() {
+      const lokasiInput = document.getElementById("uploadLokasiInput");
+      if (lokasiInput.value.trim() === "") {
+        alert("Harap isi nama lokasi terlebih dahulu!");
+        return;
+      }
+      lokasiInput.disabled = true;
+      uploadLokasiTerkunci = true;
+      alert("Lokasi berhasil dikunci!");
+    }
+
+    function ubahUploadLokasi() {
+      const lokasiInput = document.getElementById("uploadLokasiInput");
+      lokasiInput.disabled = false;
+      uploadLokasiTerkunci = false;
+      lokasiInput.focus();
+    }
+
+    function handleBarcodeInput() {
+      const barcodeInput = document.getElementById("barcodeInput");
+      const namaBarangInput = document.getElementById("namaBarangInput");
+      const barcode = barcodeInput.value.trim();
+      
+      if (barcode) {
+        if (dataBarang[barcode]) {
+          namaBarangInput.value = dataBarang[barcode];
+        } else {
+          namaBarangInput.value = "Barang tidak ditemukan";
+        }
+      }
+    }
+
+    function tambahData() {
+      const user = document.getElementById("userInput").value || "Unknown";
+      const lokasi = document.getElementById("lokasiInput").value;
+      const barcode = document.getElementById("barcodeInput").value.trim();
+      const nama = document.getElementById("namaBarangInput").value;
+      const qty = parseInt(document.getElementById("qtyInput").value) || 0;
+      
+      if (!lokasi) {
+        alert("Harap isi nama lokasi terlebih dahulu!");
+        return;
+      }
+      
+      if (!barcode) {
+        alert("Harap scan atau masukkan barcode!");
+        return;
+      }
+      
+      if (!nama || nama === "Barang tidak ditemukan") {
+        alert("Barang tidak ditemukan dalam database!");
+        return;
+      }
+      
+      if (qty <= 0) {
+        alert("Harap masukkan jumlah (qty) yang valid!");
+        return;
+      }
+      
+      // Cek apakah item sudah ada
+      const existingIndex = dataScan.findIndex(item => 
+        item.barcode === barcode && item.lokasi === lokasi && item.user === user
+      );
+      
+      if (existingIndex > -1) {
+        // Update qty jika sudah ada
+        dataScan[existingIndex].qty += qty;
+        alert(`Qty untuk ${nama} diperbarui menjadi ${dataScan[existingIndex].qty}`);
+      } else {
+        // Tambah data baru
+        dataScan.push({
+          user: user,
+          lokasi: lokasi,
+          barcode: barcode,
+          nama: nama,
+          qty: qty
+        });
+        alert(`Data ${nama} berhasil ditambahkan!`);
+      }
+      
+      // Reset input
+      document.getElementById("barcodeInput").value = "";
+      document.getElementById("namaBarangInput").value = "";
+      document.getElementById("qtyInput").value = "";
+      
+      // Fokus kembali ke input barcode
       document.getElementById("barcodeInput").focus();
-    };
+      
+      // Update table dan simpan
+      saveDataToLocalStorage();
+      updateTable();
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        
+        // Reset dataBarang
+        dataBarang = {};
+        
+        // Asumsi kolom: Barcode di kolom 0, Nama di kolom 1
+        jsonData.forEach(row => {
+          if (row[0] && row[1]) {
+            dataBarang[row[0].toString()] = row[1].toString();
+          }
+        });
+        
+        alert(`✅ Data barang berhasil diupload! ${Object.keys(dataBarang).length} item tersedia.`);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function handleBulkFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const user = document.getElementById("uploadUserInput").value || "Unknown";
+      const lokasi = document.getElementById("uploadLokasiInput").value;
+      
+      if (!lokasi) {
+        alert("Harap isi nama lokasi terlebih dahulu!");
+        event.target.value = "";
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        
+        // Reset uploadedItems
+        uploadedItems = [];
+        
+        // Asumsi kolom: Barcode di kolom 0, Nama di kolom 1, Qty di kolom 2
+        jsonData.forEach((row, index) => {
+          if (index === 0) return; // Skip header
+          
+          if (row[0] && row[1]) {
+            uploadedItems.push({
+              user: user,
+              lokasi: lokasi,
+              barcode: row[0].toString(),
+              nama: row[1].toString(),
+              qty: parseInt(row[2]) || 0
+            });
+          }
+        });
+        
+        updateUploadedItemsTable();
+        saveDataToLocalStorage();
+        alert(`✅ ${uploadedItems.length} item berhasil diupload!`);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function saveUploadedData() {
+      if (uploadedItems.length === 0) {
+        alert("Tidak ada data untuk disimpan!");
+        return;
+      }
+      
+      // Tambahkan semua uploadedItems ke dataScan
+      uploadedItems.forEach(item => {
+        const existingIndex = dataScan.findIndex(scan => 
+          scan.barcode === item.barcode && 
+          scan.lokasi === item.lokasi && 
+          scan.user === item.user
+        );
+        
+        if (existingIndex > -1) {
+          dataScan[existingIndex].qty += item.qty;
+        } else {
+          dataScan.push({...item});
+        }
+      });
+      
+      // Kosongkan uploadedItems
+      uploadedItems = [];
+      updateUploadedItemsTable();
+      saveDataToLocalStorage();
+      updateTable();
+      
+      alert(`✅ Data berhasil ditambahkan ke data scan!`);
+    }
+
+    function clearUploadedData() {
+      if (confirm("Yakin ingin menghapus semua data yang diupload?")) {
+        uploadedItems = [];
+        updateUploadedItemsTable();
+        saveDataToLocalStorage();
+      }
+    }
+
+    function toggleScanner() {
+      const scannerButton = document.getElementById("scannerButton");
+      const cameraStatus = document.getElementById("cameraStatus");
+      const readerDiv = document.getElementById("reader");
+      
+      if (!scanner) {
+        // Aktifkan scanner
+        scanner = new Html5Qrcode("reader");
+        
+        const qrCodeSuccessCallback = (decodedText) => {
+          document.getElementById("barcodeInput").value = decodedText;
+          handleBarcodeInput();
+          scanner.stop();
+          
+          // Update UI
+          scannerButton.textContent = "📷 Aktifkan Kamera";
+          cameraStatus.textContent = "Kamera tidak aktif";
+          cameraStatus.className = "camera-status inactive";
+          readerDiv.style.display = "none";
+          scanner = null;
+        };
+        
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        
+        scanner.start(
+          { facingMode: "environment" },
+          config,
+          qrCodeSuccessCallback,
+          () => {}
+        ).then(() => {
+          scannerButton.textContent = "⏹️ Matikan Kamera";
+          cameraStatus.textContent = "Kamera aktif";
+          cameraStatus.className = "camera-status active";
+          readerDiv.style.display = "block";
+        }).catch(err => {
+          console.error("Scanner error:", err);
+          alert("Gagal mengaktifkan kamera: " + err);
+          scanner = null;
+        });
+      } else {
+        // Matikan scanner
+        scanner.stop().then(() => {
+          scanner = null;
+          scannerButton.textContent = "📷 Aktifkan Kamera";
+          cameraStatus.textContent = "Kamera tidak aktif";
+          cameraStatus.className = "camera-status inactive";
+          readerDiv.style.display = "none";
+        }).catch(err => {
+          console.error("Error stopping scanner:", err);
+        });
+      }
+    }
+
+    function exportToExcel() {
+      if (dataScan.length === 0) {
+        alert("Tidak ada data untuk diexport!");
+        return;
+      }
+      
+      const ws = XLSX.utils.json_to_sheet(dataScan);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Data Stok Opname");
+      
+      // Buat nama file dengan timestamp
+      const date = new Date();
+      const timestamp = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}_${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}`;
+      const filename = `stok_opname_${timestamp}.xlsx`;
+      
+      XLSX.writeFile(wb, filename);
+    }
+
+    function hapusSemuaData() {
+      if (dataScan.length === 0 && uploadedItems.length === 0) {
+        alert("Tidak ada data untuk dihapus!");
+        return;
+      }
+      
+      if (confirm("Yakin ingin menghapus SEMUA data scan dan data yang diupload?")) {
+        dataScan = [];
+        uploadedItems = [];
+        saveDataToLocalStorage();
+        updateTable();
+        updateUploadedItemsTable();
+        alert("Semua data berhasil dihapus!");
+      }
+    }
+
+    // =============== SETUP EVENT LISTENERS ===============
+    function setupEventListeners() {
+      // Tab menu
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.dataset.tab;
+          
+          // Sembunyikan semua tab content
+          document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+          });
+          
+          // Tampilkan tab yang dipilih
+          const selectedTab = document.getElementById(tabId);
+          if (selectedTab) {
+            selectedTab.classList.add('active');
+          }
+          
+          // Update tab menu
+          document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+          });
+          this.classList.add('active');
+        });
+      });
+      
+      // Scan Tab
+      document.getElementById('lockLokasiBtn')?.addEventListener('click', lockLokasi);
+      document.getElementById('ubahLokasiBtn')?.addEventListener('click', ubahLokasi);
+      document.getElementById('uploadFile')?.addEventListener('change', handleFileUpload);
+      document.getElementById('uploadFileBtn')?.addEventListener('click', () => {
+        document.getElementById('uploadFile').click();
+      });
+      document.getElementById('barcodeInput')?.addEventListener('input', handleBarcodeInput);
+      document.getElementById('scannerButton')?.addEventListener('click', toggleScanner);
+      document.getElementById('tambahDataBtn')?.addEventListener('click', tambahData);
+      
+      // Upload Tab
+      document.getElementById('lockUploadLokasiBtn')?.addEventListener('click', lockUploadLokasi);
+      document.getElementById('ubahUploadLokasiBtn')?.addEventListener('click', ubahUploadLokasi);
+      document.getElementById('bulkUploadFile')?.addEventListener('change', handleBulkFileUpload);
+      document.getElementById('bulkUploadBtn')?.addEventListener('click', () => {
+        document.getElementById('bulkUploadFile').click();
+      });
+      document.getElementById('saveUploadedDataBtn')?.addEventListener('click', saveUploadedData);
+      document.getElementById('clearUploadedDataBtn')?.addEventListener('click', clearUploadedData);
+      
+      // Main Buttons
+      document.getElementById('exportDataBtn')?.addEventListener('click', exportToExcel);
+      document.getElementById('showLocationDataBtn')?.addEventListener('click', showLocationDataModal);
+      document.getElementById('saveToSupabaseBtn')?.addEventListener('click', saveToSupabase);
+      document.getElementById('showSupabaseConfigBtn')?.addEventListener('click', showSupabaseConfig);
+      document.getElementById('testSupabaseBtn')?.addEventListener('click', async () => {
+        if (!supabaseClient) {
+          alert("Supabase belum dikonfigurasi.");
+          showSupabaseConfig();
+          return;
+        }
+        
+        const result = await testSupabaseConnection();
+        if (result) {
+          alert("✅ Koneksi ke Supabase berhasil! Tabel stok_barang dapat diakses.");
+        } else {
+          alert("❌ Gagal terhubung ke Supabase. Periksa konfigurasi dan struktur tabel.");
+        }
+        
+        updateSupabaseStatus();
+      });
+      document.getElementById('hapusSemuaDataBtn')?.addEventListener('click', hapusSemuaData);
+      
+      // Supabase Modal
+      document.getElementById('saveSupabaseConfigBtn')?.addEventListener('click', saveSupabaseConfig);
+      document.getElementById('cancelSupabaseConfigBtn')?.addEventListener('click', () => {
+        document.getElementById('supabaseModal').style.display = 'none';
+      });
+      document.getElementById('testConnectionBtn')?.addEventListener('click', testConnectionFromModal);
+      
+      // Location Modal
+      document.getElementById('loadLocationDataBtn')?.addEventListener('click', loadSelectedLocationData);
+      document.getElementById('closeLocationModalBtn')?.addEventListener('click', () => {
+        document.getElementById('locationModal').style.display = 'none';
+      });
+      
+      // Qty Modal
+      document.getElementById('closeQtyModalBtn')?.addEventListener('click', () => {
+        document.getElementById('qtyModal').style.display = 'none';
+      });
+      document.getElementById('selectAllBtn')?.addEventListener('click', function() {
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        if (selectAllCheckbox) {
+          selectAllCheckbox.checked = !selectAllCheckbox.checked;
+          selectAllItems();
+        }
+      });
+      document.getElementById('selectAllCheckbox')?.addEventListener('change', selectAllItems);
+      document.getElementById('saveQtyBtn')?.addEventListener('click', saveQtyToDataScan);
+      
+      // Event listener untuk checkbox di tabel qty
+      document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('item-checkbox')) {
+          updateSelectedCount();
+        }
+      });
+      
+      // Allow Enter key to add data
+      document.getElementById('barcodeInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          tambahData();
+        }
+      });
+      
+      document.getElementById('qtyInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          tambahData();
+        }
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+          e.target.style.display = 'none';
+        }
+      });
+    }
+
+    // =============== START APPLICATION ===============
+    document.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
 </html>
