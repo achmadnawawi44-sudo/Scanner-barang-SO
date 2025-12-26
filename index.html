@@ -8,106 +8,23 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      padding: 20px; 
-      background: #f8f8f8; 
-      margin: 0;
-    }
+    body { font-family: Arial; padding: 20px; background: #f8f8f8; }
+    label, input, button { margin: 5px 0; display: block; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
+    .lokasi-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
+    #reader { width: 100%; max-width: 400px; margin: 10px 0; display: none; }
+    #reader video { width: 100%; border-radius: 8px; }
+    .button-group { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .button-group button { flex: 1; min-width: 120px; }
+    #uploadedItemsTable { margin-top: 20px; }
+    .tab-container { display: flex; margin-bottom: 10px; }
+    .tab { padding: 10px 15px; cursor: pointer; background: #ddd; border-radius: 5px 5px 0 0; }
+    .tab.active { background: #fff; border-bottom: 2px solid #4CAF50; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
     
-    label, input, button { 
-      margin: 5px 0; 
-      display: block; 
-    }
-    
-    table { 
-      border-collapse: collapse; 
-      width: 100%; 
-      margin-top: 10px; 
-      font-size: 14px;
-    }
-    
-    th, td { 
-      border: 1px solid #ccc; 
-      padding: 8px; 
-      text-align: left; 
-    }
-    
-    th { 
-      background-color: #eee; 
-      font-weight: bold;
-    }
-    
-    .lokasi-buttons { 
-      display: flex; 
-      gap: 10px; 
-      margin-bottom: 10px; 
-    }
-    
-    #reader { 
-      width: 100%; 
-      max-width: 400px; 
-      margin: 10px 0; 
-      display: none; 
-    }
-    
-    #reader video { 
-      width: 100%; 
-      border-radius: 8px; 
-    }
-    
-    .button-group { 
-      display: flex; 
-      gap: 10px; 
-      margin-top: 10px; 
-      flex-wrap: wrap; 
-    }
-    
-    .button-group button { 
-      flex: 1; 
-      min-width: 120px; 
-    }
-    
-    #uploadedItemsTable { 
-      margin-top: 20px; 
-    }
-    
-    .tab-container { 
-      display: flex; 
-      margin-bottom: 10px; 
-      border-bottom: 2px solid #ddd;
-    }
-    
-    .tab { 
-      padding: 10px 15px; 
-      cursor: pointer; 
-      background: #f0f0f0; 
-      border-radius: 5px 5px 0 0;
-      margin-right: 5px;
-      border: 1px solid #ddd;
-      border-bottom: none;
-    }
-    
-    .tab.active { 
-      background: #fff; 
-      border-bottom: 2px solid #4CAF50; 
-      margin-bottom: -2px;
-    }
-    
-    .tab-content { 
-      display: none; 
-      padding: 20px;
-      background: white;
-      border: 1px solid #ddd;
-      border-top: none;
-      border-radius: 0 0 5px 5px;
-    }
-    
-    .tab-content.active { 
-      display: block; 
-    }
-    
-    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
@@ -117,34 +34,17 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0,0,0,0.5);
-      overflow: auto;
     }
-    
     .modal-content {
       background-color: #fefefe;
-      margin: 5% auto;
+      margin: 15% auto;
       padding: 20px;
       border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
       border-radius: 5px;
-      width: 90%;
-      max-width: 1200px;
-      max-height: 85vh;
-      overflow-y: auto;
+      text-align: center;
     }
-    
-    .modal-content.long {
-      max-height: 90vh;
-      overflow-y: auto;
-      max-width: 1400px;
-      width: 95%;
-    }
-    
-    .modal-content.very-long {
-      max-width: 1600px;
-      width: 98%;
-      max-height: 95vh;
-    }
-    
     .modal-buttons {
       display: flex;
       justify-content: center;
@@ -152,39 +52,24 @@
       margin-top: 20px;
     }
     
-    /* User List Styles */
     .user-list {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin: 10px 0;
-      max-height: 200px;
-      overflow-y: auto;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
     }
-    
     .user-button {
       padding: 8px 12px;
       background: #e0e0e0;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
-      transition: all 0.2s;
     }
-    
-    .user-button:hover {
-      background: #d0d0d0;
-    }
-    
     .user-button.active {
       background: #4CAF50;
       color: white;
     }
     
-    /* Camera Status */
     .camera-status {
       margin: 10px 0;
       padding: 8px;
@@ -192,26 +77,22 @@
       text-align: center;
       font-weight: bold;
     }
-    
     .camera-status.active {
       background: #d4edda;
       color: #155724;
       border: 2px solid #c3e6cb;
     }
-    
     .camera-status.inactive {
       background: #f8d7da;
       color: #721c24;
       border: 2px solid #f5c6cb;
     }
-    
     .camera-status.error {
       background: #fff3cd;
       color: #856404;
       border: 2px solid #ffeaa7;
     }
     
-    /* Progress Bar */
     .progress-bar-container {
       width: 100%;
       background-color: #f0f0f0;
@@ -219,7 +100,6 @@
       margin: 10px 0;
       display: none;
     }
-    
     .progress-bar {
       width: 0%;
       height: 20px;
@@ -231,7 +111,6 @@
       transition: width 0.3s ease;
     }
     
-    /* Button Styles */
     button {
       cursor: pointer;
       padding: 8px 16px;
@@ -239,217 +118,30 @@
       border-radius: 4px;
       font-size: 14px;
       transition: all 0.3s ease;
-      background-color: #007bff;
-      color: white;
     }
-    
     button:hover {
       opacity: 0.9;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
     
-    button:active {
-      transform: translateY(0);
-    }
-    
-    button.delete {
-      background-color: #dc3545;
-    }
-    
-    button.edit {
-      background-color: #ffc107;
-      color: black;
-    }
-    
-    button.success {
-      background-color: #28a745;
-    }
-    
-    button.secondary {
-      background-color: #6c757d;
-    }
-    
-    /* Table in Modal (FIXED - Sesuai permintaan) */
-    .modal-table-container {
-      max-height: 500px;
+    .modal-content.long {
+      max-height: 80vh;
       overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      margin: 15px 0;
+      max-width: 600px;
     }
     
-    .modal-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1000px; /* Lebar minimum untuk muat banyak data */
-    }
-    
-    .modal-table thead {
-      position: sticky;
-      top: 0;
-      background-color: #f5f5f5;
-      z-index: 10;
-    }
-    
-    .modal-table th {
-      padding: 12px 8px;
-      border-bottom: 2px solid #ddd;
-      background-color: #e9ecef;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-    
-    .modal-table td {
-      padding: 10px 8px;
-      border-bottom: 1px solid #eee;
-      vertical-align: middle;
-    }
-    
-    .modal-table tr:hover {
-      background-color: #f8f9fa;
-    }
-    
-    /* Urutan kolom FIXED: Barcode, Nama, Qty */
-    .modal-table th:nth-child(1) { width: 200px; } /* Barcode */
-    .modal-table th:nth-child(2) { width: auto; }  /* Nama */
-    .modal-table th:nth-child(3) { width: 120px; } /* Qty */
-    
-    /* Checkbox column */
-    .modal-table th:first-child,
-    .modal-table td:first-child {
-      width: 50px;
-      text-align: center;
-    }
-    
-    /* Input Qty */
-    .qty-input {
-      width: 100px;
-      padding: 6px 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 14px;
-    }
-    
-    .qty-input:focus {
-      border-color: #4CAF50;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
-    }
-    
-    /* Responsive */
     @media (max-width: 768px) {
       body { padding: 10px; }
       .button-group { flex-direction: column; }
       .button-group button { width: 100%; }
       .lokasi-buttons { flex-direction: column; }
       #reader { max-width: 100%; }
-      .modal-content {
-        width: 95%;
-        margin: 2% auto;
-        padding: 15px;
-      }
-      .modal-content.long {
-        width: 98%;
-      }
-      .modal-table-container {
-        font-size: 12px;
-      }
-    }
-    
-    @media (max-width: 1024px) {
-      .modal-content.very-long {
-        width: 99%;
-        margin: 1% auto;
-      }
-    }
-    
-    /* Scrollbar Styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-    
-    /* Header Logo */
-    .header-logo {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 2px solid #ddd;
-    }
-    
-    .header-logo img {
-      height: 50px;
-      margin-right: 15px;
-    }
-    
-    .header-logo h2 {
-      margin: 0;
-      color: #333;
-    }
-    
-    /* Input Styles */
-    input[type="text"],
-    input[type="number"],
-    input[type="password"] {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-    
-    input[type="text"]:focus,
-    input[type="number"]:focus,
-    input[type="password"]:focus {
-      border-color: #4CAF50;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
-    }
-    
-    input[disabled] {
-      background-color: #f5f5f5;
-      cursor: not-allowed;
-    }
-    
-    /* File Upload */
-    input[type="file"] {
-      width: 100%;
-      padding: 6px;
-      border: 1px dashed #ccc;
-      border-radius: 4px;
-      background-color: #f9f9f9;
-    }
-    
-    /* HR Styles */
-    hr {
-      border: none;
-      border-top: 1px solid #eee;
-      margin: 20px 0;
     }
   </style>
 </head>
 <body>
-  <div class="header-logo">
-    <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/main/goto.png" alt="Logo Perusahaan">
-    <h2>Scanner Stok Opname Goto Living</h2>
-  </div>
+  <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
+  <h2>Scanner Stok Opname Goto Living</h2>
 
   <!-- Modal Supabase Settings -->
   <div id="supabaseModal" class="modal">
@@ -461,8 +153,8 @@
       <label>API Key:</label>
       <input type="password" id="supabaseKey" placeholder="Your API Key" />
       <div class="modal-buttons">
-        <button id="saveSupabaseConfigBtn" class="success">Simpan</button>
-        <button id="cancelSupabaseConfigBtn" class="delete">Batal</button>
+        <button id="saveSupabaseConfigBtn" style="background-color: #4CAF50; color: white;">Simpan</button>
+        <button id="cancelSupabaseConfigBtn" style="background-color: #f44336; color: white;">Batal</button>
       </div>
     </div>
   </div>
@@ -497,36 +189,34 @@
       </div>
       
       <div class="modal-buttons">
-        <button id="loadLocationDataBtn" class="success" style="display: none;">Muat Data</button>
-        <button id="closeLocationModalBtn" class="delete">Tutup</button>
+        <button id="loadLocationDataBtn" style="background-color: #4CAF50; color: white; display: none;">Muat Data</button>
+        <button id="closeLocationModalBtn" style="background-color: #f44336; color: white;">Tutup</button>
       </div>
     </div>
   </div>
 
   <!-- Modal Isi Qty per Item -->
   <div id="qtyModal" class="modal">
-    <div class="modal-content very-long">
-      <h3>Isi Qty untuk <span id="modalLocationName" style="color: #4CAF50;"></span></h3>
+    <div class="modal-content long">
+      <h3>Isi Qty untuk <span id="modalLocationName"></span></h3>
       
       <div style="margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <div id="currentLocationInfo" style="font-size: 16px;"></div>
-          <button id="selectAllBtn" style="background-color: #2196F3; color: white; padding: 8px 16px;">
-            <span id="selectAllText">Pilih Semua</span>
-          </button>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <div id="currentLocationInfo"></div>
+          <button id="selectAllBtn" style="background-color: #2196F3; color: white; padding: 5px 10px;">Pilih Semua</button>
         </div>
       </div>
       
-      <div class="modal-table-container">
-        <table class="modal-table">
+      <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
+        <table id="locationItemsTable" style="width: 100%; border-collapse: collapse;">
           <thead>
-            <tr>
-              <th>
+            <tr style="background-color: #f5f5f5; position: sticky; top: 0;">
+              <th style="padding: 8px; border-bottom: 2px solid #ddd; width: 50px;">
                 <input type="checkbox" id="selectAllCheckbox" />
               </th>
-              <th>Barcode</th> <!-- URUTAN DIPERBAIKI: Barcode dulu -->
-              <th>Nama</th>    <!-- Lalu Nama -->
-              <th>Qty</th>     <!-- Terakhir Qty -->
+              <th style="padding: 8px; border-bottom: 2px solid #ddd;">Nama</th>
+              <th style="padding: 8px; border-bottom: 2px solid #ddd;">Barcode</th>
+              <th style="padding: 8px; border-bottom: 2px solid #ddd; width: 120px;">Qty</th>
             </tr>
           </thead>
           <tbody id="locationItemsBody">
@@ -536,10 +226,10 @@
       </div>
       
       <div style="margin-top: 15px; text-align: center;">
-        <div id="selectedCount" style="font-size: 14px; color: #666; margin-bottom: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px;"></div>
+        <div id="selectedCount" style="font-size: 14px; color: #666; margin-bottom: 10px;"></div>
         <div class="modal-buttons">
-          <button id="saveQtyBtn" class="success">Simpan ke Data Scan</button>
-          <button id="closeQtyModalBtn" class="delete">Batal</button>
+          <button id="saveQtyBtn" style="background-color: #4CAF50; color: white;">Simpan ke Data Scan</button>
+          <button id="closeQtyModalBtn" style="background-color: #f44336; color: white;">Batal</button>
         </div>
       </div>
     </div>
@@ -553,126 +243,102 @@
 
   <!-- Scan Tab -->
   <div id="scanTab" class="tab-content active">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-      <div>
-        <label><strong>User:</strong></label>
-        <input type="text" id="userInput" placeholder="Nama user" value="User 1" />
-      </div>
-      <div>
-        <label><strong>Nama Lokasi:</strong></label>
-        <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
-        <div class="lokasi-buttons">
-          <button id="lockLokasiBtn">🔒 Kunci Lokasi</button>
-          <button id="ubahLokasiBtn">🔓 Ubah Lokasi</button>
-        </div>
-      </div>
+    <label>User:</label>
+    <input type="text" id="userInput" placeholder="Nama user" value="User 1" />
+    
+    <label>Nama Lokasi:</label>
+    <input type="text" id="lokasiInput" placeholder="Contoh: Area A" />
+    <div class="lokasi-buttons">
+      <button id="lockLokasiBtn">🔒Kunci Lokasi</button>
+      <button id="ubahLokasiBtn">🔓Ubah Lokasi</button>
     </div>
 
     <hr>
 
-    <label><strong>📤 Upload File Data Barang (CSV/XLSX):</strong></label>
-    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-      <input type="file" id="uploadFile" accept=".csv, .xlsx" style="flex: 1;" />
-      <button id="uploadFileBtn">Upload</button>
-    </div>
+    <label>📤Upload File Data Barang (CSV/XLSX):</label>
+    <input type="file" id="uploadFile" accept=".csv, .xlsx" />
+    <button id="uploadFileBtn">Upload</button>
 
     <hr>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-      <div>
-        <label><strong>Scan Barcode:</strong></label>
-        <input type="text" id="barcodeInput" placeholder="Scan barcode..." autofocus />
-        <button id="scannerButton" style="width: 100%; margin-top: 10px;">📷 Aktifkan Kamera</button>
-        
-        <div id="cameraStatus" class="camera-status inactive">Kamera tidak aktif</div>
-        <div id="reader"></div>
-      </div>
-      <div>
-        <label><strong>Nama Barang:</strong></label>
-        <input type="text" id="namaBarangInput" disabled />
-        
-        <label><strong>Qty:</strong></label>
-        <input type="number" id="qtyInput" placeholder="Jumlah..." />
-        
-        <button id="tambahDataBtn" style="width: 100%; margin-top: 15px; background-color: #28a745;">Tambah Data</button>
-      </div>
-    </div>
+    <label>Scan Barcode:</label>
+    <input type="text" id="barcodeInput" placeholder="Scan barcode..." autofocus />
+    
+    <button id="scannerButton">📷 Aktifkan Kamera</button>
+    
+    <div id="cameraStatus" class="camera-status inactive">Kamera tidak aktif</div>
+    <div id="reader"></div>
+
+    <label>Nama:</label>
+    <input type="text" id="namaBarangInput" disabled />
+    <label>Qty:</label>
+    <input type="number" id="qtyInput" placeholder="Jumlah..." />
+    <button id="tambahDataBtn">Tambah</button>
 
     <hr>
 
     <h3>Data Stok Barang:</h3>
-    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px;">
-      <table id="dataTable">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Lokasi</th>
-            <th>Barcode</th>
-            <th>Nama</th>
-            <th>Qty</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Lokasi</th>
+          <th>Barcode</th>
+          <th>Nama</th>
+          <th>Qty</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <!-- Upload Data Tab -->
   <div id="uploadTab" class="tab-content">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-      <div>
-        <label><strong>User:</strong></label>
-        <input type="text" id="uploadUserInput" placeholder="Nama user" value="User 1" />
-      </div>
-      <div>
-        <label><strong>Nama Lokasi:</strong></label>
-        <input type="text" id="uploadLokasiInput" placeholder="Contoh: Area A" />
-        <div class="lokasi-buttons">
-          <button id="lockUploadLokasiBtn">🔒 Kunci Lokasi</button>
-          <button id="ubahUploadLokasiBtn">🔓 Ubah Lokasi</button>
-        </div>
-      </div>
+    <label>User:</label>
+    <input type="text" id="uploadUserInput" placeholder="Nama user" value="User 1" />
+    
+    <label>Nama Lokasi:</label>
+    <input type="text" id="uploadLokasiInput" placeholder="Contoh: Area A" />
+    <div class="lokasi-buttons">
+      <button id="lockUploadLokasiBtn">🔒Kunci Lokasi</button>
+      <button id="ubahUploadLokasiBtn">🔓Ubah Lokasi</button>
     </div>
 
     <hr>
 
-    <label><strong>📤 Upload File Data Barang (CSV/XLSX):</strong></label>
-    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-      <input type="file" id="bulkUploadFile" accept=".csv, .xlsx" style="flex: 1;" />
-      <button id="bulkUploadBtn">Upload Data</button>
-    </div>
+    <label>📤Upload File Data Barang (CSV/XLSX):</label>
+    <input type="file" id="bulkUploadFile" accept=".csv, .xlsx" />
+    <button id="bulkUploadBtn">Upload Data</button>
 
     <hr>
 
     <h3>Data yang Diupload:</h3>
-    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px;">
-      <table id="uploadedItemsTable">
-        <thead>
-          <tr>
-            <th>Barcode</th>
-            <th>Nama</th>
-            <th>Qty</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="uploadedItemsBody"></tbody>
-      </table>
-    </div>
+    <table id="uploadedItemsTable">
+      <thead>
+        <tr>
+          <th>Barcode</th>
+          <th>Nama</th>
+          <th>Qty</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="uploadedItemsBody"></tbody>
+    </table>
 
     <div class="button-group" style="margin-top: 20px;">
-      <button id="saveUploadedDataBtn" class="success">Simpan Data</button>
-      <button id="clearUploadedDataBtn" class="delete">Hapus Data</button>
+      <button id="saveUploadedDataBtn" style="background-color: #4CAF50; color: white;">Simpan Data</button>
+      <button id="clearUploadedDataBtn" style="background-color: #f44336; color: white;">Hapus Data</button>
     </div>
   </div>
 
   <!-- Main Buttons -->
   <div class="button-group">
     <button id="exportDataBtn">Download Data (Excel)</button>
-    <button id="showLocationDataBtn" class="success">Ambil Data per Lokasi</button>
-    <button id="saveToSupabaseBtn">Simpan ke Supabase</button>
-    <button id="showSupabaseConfigBtn" class="secondary">Supabase Settings</button>
-    <button id="hapusSemuaDataBtn" class="delete">Hapus Semua Data</button>
+    <button id="showLocationDataBtn" style="background-color: #10b981; color: white;">Ambil Data per Lokasi</button>
+    <button id="saveToSupabaseBtn" style="background-color: #3b82f6; color: white;">Simpan ke Supabase</button>
+    <button id="showSupabaseConfigBtn" style="background-color: #6b7280; color: white;">Supabase Settings</button>
+    <button id="hapusSemuaDataBtn" style="background-color: red; color: white;">Hapus Semua Data</button>
   </div>
 
   <script>
@@ -685,12 +351,13 @@
     let uploadedItems = [];
     let supabaseClient = null;
     let isFetchingData = false;
-    let cameraActive = false;
+    let cameraActive = false; // Variabel untuk melacak status kamera
 
     // =============== FUNGSI INISIALISASI ===============
     function initApp() {
       console.log('Initializing app...');
       
+      // Load data dari localStorage
       try {
         const savedDataScan = localStorage.getItem("dataScan");
         const savedUploadedItems = localStorage.getItem("uploadedItems");
@@ -709,6 +376,7 @@
       updateTable();
       updateUploadedItemsTable();
       
+      // Cek konfigurasi Supabase
       const supabaseUrl = localStorage.getItem("supabaseUrl");
       const supabaseKey = localStorage.getItem("supabaseKey");
       
@@ -716,8 +384,10 @@
         initSupabaseClient(supabaseUrl, supabaseKey);
       }
       
+      // Setup event listeners
       setupEventListeners();
       
+      // Fokus ke input barcode
       setTimeout(() => {
         const barcodeInput = document.getElementById("barcodeInput");
         if (barcodeInput) barcodeInput.focus();
@@ -745,8 +415,9 @@
         
         const editBtn = document.createElement("button");
         editBtn.textContent = "Edit";
-        editBtn.className = "edit";
         editBtn.style.marginRight = "5px";
+        editBtn.style.backgroundColor = "#ffc107";
+        editBtn.style.color = "black";
         editBtn.onclick = () => {
           const newQty = prompt("Masukkan Qty baru:", item.qty);
           if (newQty !== null && !isNaN(newQty)) {
@@ -759,7 +430,8 @@
 
         const delBtn = document.createElement("button");
         delBtn.textContent = "Hapus";
-        delBtn.className = "delete";
+        delBtn.style.backgroundColor = "#f44336";
+        delBtn.style.color = "white";
         delBtn.onclick = () => {
           if (confirm("Yakin ingin menghapus baris ini?")) {
             dataScan.splice(index, 1);
@@ -786,7 +458,7 @@
         const qtyInput = document.createElement("input");
         qtyInput.type = "number";
         qtyInput.value = item.qty;
-        qtyInput.className = "qty-input";
+        qtyInput.style.width = "60px";
         qtyInput.onchange = (e) => {
           uploadedItems[index].qty = parseInt(e.target.value) || 0;
           saveDataToLocalStorage();
@@ -796,7 +468,8 @@
         const actionCell = row.insertCell();
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Hapus";
-        deleteBtn.className = "delete";
+        deleteBtn.style.backgroundColor = "#f44336";
+        deleteBtn.style.color = "white";
         deleteBtn.onclick = () => {
           if (confirm("Yakin ingin menghapus item ini?")) {
             uploadedItems.splice(index, 1);
@@ -904,6 +577,8 @@
         
         console.log('Memulai pengambilan data dari Supabase...');
         
+        // Ambil total count terlebih dahulu
+        loadingDetails.textContent = 'Menghitung total data...';
         const { count, error: countError } = await supabaseClient
           .from('stok_barang')
           .select('*', { count: 'exact', head: true });
@@ -924,6 +599,7 @@
           return;
         }
         
+        // Ambil data dengan pagination
         const pageSize = 1000;
         const totalPages = Math.ceil(totalData / pageSize);
         let allData = [];
@@ -966,6 +642,7 @@
           return;
         }
         
+        // Kelompokkan data berdasarkan lokasi
         loadingDetails.textContent = 'Mengelompokkan data berdasarkan lokasi...';
         progressBar.style.width = '100%';
         progressBar.textContent = '100%';
@@ -981,9 +658,11 @@
         
         console.log(`Jumlah lokasi: ${Object.keys(groupedData).length}`);
         
+        // Tampilkan tombol lokasi
         locationList.innerHTML = '';
         const locations = Object.keys(groupedData).sort();
         
+        // Tambahkan tombol "Semua Lokasi"
         const allButton = document.createElement('button');
         allButton.className = 'user-button';
         allButton.dataset.location = 'Semua Lokasi';
@@ -998,6 +677,7 @@
         };
         locationList.appendChild(allButton);
         
+        // Tambahkan tombol untuk setiap lokasi
         locations.forEach(location => {
           if (groupedData[location].length > 0) {
             const button = document.createElement('button');
@@ -1016,6 +696,7 @@
           }
         });
         
+        // Setup filter
         const filterInput = document.getElementById('filterLocation');
         if (filterInput) {
           filterInput.oninput = function() {
@@ -1028,11 +709,13 @@
           };
         }
         
+        // Sembunyikan progress bar
         setTimeout(() => {
           progressBarContainer.style.display = 'none';
           loadingStatus.style.display = 'none';
         }, 1000);
         
+        // Tampilkan statistik
         const statsDiv = document.createElement('div');
         statsDiv.style.marginTop = '10px';
         statsDiv.style.padding = '10px';
@@ -1069,10 +752,12 @@
     }
 
     function selectLocationInModal(location, items, target) {
+      // Update UI
       const buttons = document.querySelectorAll('#locationList .user-button');
       buttons.forEach(btn => btn.classList.remove('active'));
       target.classList.add('active');
       
+      // Tampilkan info lokasi
       const infoDiv = document.getElementById('locationDataInfo');
       const infoContent = document.getElementById('selectedLocationInfo');
       const countDiv = document.getElementById('locationItemCount');
@@ -1084,6 +769,7 @@
         countDiv.textContent = `${items.length.toLocaleString()} item ditemukan`;
         loadBtn.style.display = 'block';
         
+        // Simpan data lokasi yang dipilih
         loadBtn.dataset.location = location;
         loadBtn.dataset.items = JSON.stringify(items);
       }
@@ -1099,7 +785,10 @@
       const location = loadBtn.dataset.location;
       const items = JSON.parse(loadBtn.dataset.items);
       
+      // Tutup modal lokasi
       document.getElementById('locationModal').style.display = 'none';
+      
+      // Tampilkan modal isi qty
       showQtyModal(location, items);
     }
 
@@ -1111,32 +800,34 @@
       
       if (!modal || !locationNameSpan || !currentLocationInfo || !itemsBody) return;
       
+      // Set data lokasi
       locationNameSpan.textContent = location;
       currentLocationInfo.innerHTML = `
         <div>
-          <strong style="font-size: 18px;">${location}</strong>
-          <div style="font-size: 14px; color: #666;">${items.length.toLocaleString()} item ditemukan</div>
+          <strong>${location}</strong>
+          <div style="font-size: 12px; color: #666;">${items.length.toLocaleString()} item</div>
         </div>
       `;
       
+      // Isi tabel items (maksimal 500 item untuk performa)
       itemsBody.innerHTML = '';
       
-      const displayItems = items.slice(0, 1000);
+      const displayItems = items.slice(0, 500);
       
       if (displayItems.length === 0) {
         itemsBody.innerHTML = `
           <tr>
-            <td colspan="4" style="text-align: center; padding: 40px; color: #666; font-size: 16px;">
+            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
               Tidak ada item di lokasi ini
             </td>
           </tr>
         `;
       } else {
-        if (items.length > 1000) {
+        if (items.length > 500) {
           const warningRow = document.createElement('tr');
           warningRow.innerHTML = `
-            <td colspan="4" style="text-align: center; padding: 10px; background: #fff3cd; color: #856404; font-size: 13px;">
-              <strong>Info:</strong> Menampilkan 1000 item pertama dari ${items.length.toLocaleString()} item total
+            <td colspan="4" style="text-align: center; padding: 10px; background: #fff3cd; color: #856404;">
+              <strong>Info:</strong> Menampilkan 500 item pertama dari ${items.length.toLocaleString()} item total
             </td>
           `;
           itemsBody.appendChild(warningRow);
@@ -1144,30 +835,32 @@
         
         displayItems.forEach((item, index) => {
           const row = document.createElement('tr');
+          row.style.borderBottom = '1px solid #eee';
           
+          // Gunakan field yang benar dari database
           const namaBarang = item.nama || item.nama_barang || item.item_name || 'N/A';
           const barcodeBarang = item.barcode || item.kode || item.kode_barang || '-';
           const qtyBarang = item.qty || item.quantity || item.stock || 0;
           
           row.innerHTML = `
-            <td style="text-align: center; vertical-align: middle;">
+            <td style="padding: 8px; text-align: center;">
               <input type="checkbox" class="item-checkbox" data-index="${index}" />
             </td>
-            <td style="font-family: monospace; font-weight: bold; color: #333;">
+            <td style="padding: 8px;">
+              ${namaBarang}
+              ${qtyBarang ? `<div style="font-size: 11px; color: #666;">Stok: ${qtyBarang}</div>` : ''}
+            </td>
+            <td style="padding: 8px; font-family: monospace;">
               ${barcodeBarang}
             </td>
-            <td style="max-width: 600px; word-wrap: break-word;">
-              <div style="font-size: 14px; margin-bottom: 4px;">${namaBarang}</div>
-              ${qtyBarang ? `<div style="font-size: 12px; color: #666; background: #f0f0f0; padding: 2px 6px; border-radius: 3px; display: inline-block;">Stok: ${qtyBarang}</div>` : ''}
-            </td>
-            <td>
+            <td style="padding: 8px;">
               <input type="number" 
-                     class="qty-input item-qty" 
+                     class="item-qty" 
                      data-index="${index}"
                      min="0" 
                      value="0" 
-                     placeholder="0"
-                     onfocus="this.select()" />
+                     style="width: 80px; padding: 4px; text-align: center;"
+                     placeholder="Qty scan" />
             </td>
           `;
           
@@ -1175,11 +868,11 @@
         });
       }
       
+      // Update selected count
       updateSelectedCount();
-      modal.style.display = 'block';
       
-      document.getElementById('selectAllCheckbox').checked = false;
-      document.getElementById('selectAllText').textContent = 'Pilih Semua';
+      // Tampilkan modal
+      modal.style.display = 'block';
     }
 
     function updateSelectedCount() {
@@ -1187,22 +880,13 @@
       const countDiv = document.getElementById('selectedCount');
       
       if (countDiv) {
-        if (checkboxes.length > 0) {
-          countDiv.innerHTML = `<strong>${checkboxes.length}</strong> item dipilih`;
-          countDiv.style.background = '#e8f5e8';
-          countDiv.style.color = '#155724';
-        } else {
-          countDiv.innerHTML = 'Tidak ada item yang dipilih';
-          countDiv.style.background = '#f8f9fa';
-          countDiv.style.color = '#666';
-        }
+        countDiv.textContent = `${checkboxes.length} item dipilih`;
       }
     }
 
     function selectAllItems() {
       const selectAllCheckbox = document.getElementById('selectAllCheckbox');
       const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-      const selectAllText = document.getElementById('selectAllText');
       
       if (!selectAllCheckbox) return;
       
@@ -1211,7 +895,6 @@
         checkbox.checked = isChecked;
       });
       
-      selectAllText.textContent = isChecked ? 'Batal Pilih Semua' : 'Pilih Semua';
       updateSelectedCount();
     }
 
@@ -1219,68 +902,87 @@
       const locationName = document.getElementById('modalLocationName').textContent;
       const user = document.getElementById("userInput").value || "Unknown";
       
+      // Ambil semua baris dari tabel
       const rows = document.querySelectorAll('#locationItemsBody tr');
       const selectedItems = [];
       
-      rows.forEach((row) => {
+      rows.forEach((row, index) => {
         const checkbox = row.querySelector('.item-checkbox');
         const qtyInput = row.querySelector('.item-qty');
-        const cells = row.querySelectorAll('td');
         
-        if (checkbox && checkbox.checked && cells.length >= 4) {
+        // Periksa apakah checkbox dicentang
+        if (checkbox && checkbox.checked) {
           const qty = parseInt(qtyInput.value) || 0;
           if (qty > 0) {
-            const barcode = cells[1]?.textContent?.trim() || '-';
-            let namaText = cells[2]?.querySelector('div')?.textContent?.trim() || cells[2]?.textContent?.trim() || 'N/A';
+            // Ambil data dari baris
+            const cells = row.querySelectorAll('td');
             
-            if (barcode && barcode !== '-' && namaText && namaText !== 'N/A') {
-              selectedItems.push({
-                barcode: barcode,
-                nama: namaText,
-                qty: qty,
-                lokasi: locationName,
-                user: user
-              });
-            }
+            // Cell 1: checkbox, Cell 2: nama, Cell 3: barcode, Cell 4: qty input
+            const namaCell = cells[1];
+            const barcodeCell = cells[2];
+            
+            // Ambil teks dari sel, hapus informasi tambahan
+            let namaText = namaCell.textContent;
+            // Hapus "Stok: X" jika ada
+            namaText = namaText.split('Stok:')[0].trim();
+            
+            const barcode = barcodeCell.textContent.trim();
+            
+            // Simpan data item yang dipilih
+            selectedItems.push({
+              barcode: barcode,
+              nama: namaText,
+              qty: qty,
+              lokasi: locationName,
+              user: user
+            });
           }
         }
       });
       
       if (selectedItems.length === 0) {
-        alert('Pilih minimal satu item dan isi qty yang valid (lebih dari 0).');
+        alert('Pilih minimal satu item dan isi qty yang valid.');
         return;
       }
       
+      // Simpan ke dataScan
       let count = 0;
       selectedItems.forEach(item => {
         const { barcode, nama, qty, lokasi, user } = item;
         
-        const existingIndex = dataScan.findIndex(scan => 
-          scan.barcode === barcode && 
-          scan.lokasi === lokasi && 
-          scan.user === user
-        );
-        
-        if (existingIndex > -1) {
-          dataScan[existingIndex].qty += qty;
-        } else {
-          dataScan.push({
-            user: user,
-            lokasi: lokasi,
-            barcode: barcode,
-            nama: nama,
-            qty: qty
-          });
+        if (barcode && barcode !== '-' && nama && nama !== 'N/A') {
+          // Cek apakah item sudah ada di dataScan
+          const existingIndex = dataScan.findIndex(scan => 
+            scan.barcode === barcode && 
+            scan.lokasi === lokasi && 
+            scan.user === user
+          );
+          
+          if (existingIndex > -1) {
+            // Update qty jika sudah ada
+            dataScan[existingIndex].qty += qty;
+          } else {
+            // Tambah data baru
+            dataScan.push({
+              user: user,
+              lokasi: lokasi,
+              barcode: barcode,
+              nama: nama,
+              qty: qty
+            });
+          }
+          count++;
         }
-        count++;
       });
       
+      // Update table dan simpan
       saveDataToLocalStorage();
       updateTable();
       
+      // Tutup modal
       document.getElementById('qtyModal').style.display = 'none';
       
-      alert(`✅ ${count} item berhasil ditambahkan ke data scan untuk lokasi "${locationName}".`);
+      alert(`✅ ${count} item berhasil ditambahkan ke data scan untuk lokasi ${locationName}.`);
     }
 
     // =============== FUNGSI LAINNYA ===============
@@ -1361,14 +1063,17 @@
         return;
       }
       
+      // Cek apakah item sudah ada
       const existingIndex = dataScan.findIndex(item => 
         item.barcode === barcode && item.lokasi === lokasi && item.user === user
       );
       
       if (existingIndex > -1) {
+        // Update qty jika sudah ada
         dataScan[existingIndex].qty += qty;
         alert(`Qty untuk ${nama} diperbarui menjadi ${dataScan[existingIndex].qty}`);
       } else {
+        // Tambah data baru
         dataScan.push({
           user: user,
           lokasi: lokasi,
@@ -1379,11 +1084,15 @@
         alert(`Data ${nama} berhasil ditambahkan!`);
       }
       
+      // Reset input
       document.getElementById("barcodeInput").value = "";
       document.getElementById("namaBarangInput").value = "";
       document.getElementById("qtyInput").value = "";
+      
+      // Fokus kembali ke input barcode
       document.getElementById("barcodeInput").focus();
       
+      // Update table dan simpan
       saveDataToLocalStorage();
       updateTable();
     }
@@ -1399,8 +1108,10 @@
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
         
+        // Reset dataBarang
         dataBarang = {};
         
+        // Asumsi kolom: Barcode di kolom 0, Nama di kolom 1
         jsonData.forEach(row => {
           if (row[0] && row[1]) {
             dataBarang[row[0].toString()] = row[1].toString();
@@ -1432,10 +1143,12 @@
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
         
+        // Reset uploadedItems
         uploadedItems = [];
         
+        // Asumsi kolom: Barcode di kolom 0, Nama di kolom 1, Qty di kolom 2
         jsonData.forEach((row, index) => {
-          if (index === 0) return;
+          if (index === 0) return; // Skip header
           
           if (row[0] && row[1]) {
             uploadedItems.push({
@@ -1461,6 +1174,7 @@
         return;
       }
       
+      // Tambahkan semua uploadedItems ke dataScan
       uploadedItems.forEach(item => {
         const existingIndex = dataScan.findIndex(scan => 
           scan.barcode === item.barcode && 
@@ -1475,6 +1189,7 @@
         }
       });
       
+      // Kosongkan uploadedItems
       uploadedItems = [];
       updateUploadedItemsTable();
       saveDataToLocalStorage();
@@ -1491,12 +1206,13 @@
       }
     }
 
-    // =============== FUNGSI KAMERA ===============
+    // =============== FUNGSI KAMERA YANG SUDAH TERBUKTI BERHASIL ===============
     async function toggleScanner() {
       const scannerButton = document.getElementById("scannerButton");
       const cameraStatus = document.getElementById("cameraStatus");
       const readerDiv = document.getElementById("reader");
       
+      // Hentikan scanner jika aktif
       if (scanner && cameraActive) {
         try {
           await scanner.stop();
@@ -1512,6 +1228,7 @@
         }
       }
       
+      // Mulai scanner
       readerDiv.style.display = "block";
       readerDiv.innerHTML = "<div style='padding: 20px; text-align: center;'>Menginisialisasi kamera...</div>";
 
@@ -1532,10 +1249,12 @@
             const nama = dataBarang[decodedText];
             document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
             
+            // Auto focus ke qty input
             setTimeout(() => {
               document.getElementById("qtyInput").focus();
             }, 100);
             
+            // Hentikan scanner setelah scan berhasil
             scanner.stop().then(() => {
               cameraActive = false;
               readerDiv.innerHTML = "";
@@ -1548,6 +1267,7 @@
             });
           },
           (errorMsg) => {
+            // Error callback - abaikan error "NotFoundException"
             if (errorMsg && !errorMsg.includes("NotFoundException")) {
               console.log("Scanning...", errorMsg);
             }
@@ -1573,13 +1293,16 @@
           errorMessage += err.toString();
         }
         
+        // Tampilkan pesan error di status
         cameraStatus.textContent = errorMessage;
         cameraStatus.className = "camera-status error";
         
+        // Reset state
         readerDiv.style.display = "none";
         cameraActive = false;
         scannerButton.textContent = "📷 Aktifkan Kamera";
         
+        // Tampilkan alert hanya untuk error kritis
         if (err.toString().includes("NotAllowedError") || 
             err.toString().includes("NotFoundError") || 
             err.toString().includes("NotReadableError")) {
@@ -1598,6 +1321,7 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Data Stok Opname");
       
+      // Buat nama file dengan timestamp
       const date = new Date();
       const timestamp = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}_${date.getHours().toString().padStart(2,'0')}${date.getMinutes().toString().padStart(2,'0')}`;
       const filename = `stok_opname_${timestamp}.xlsx`;
@@ -1622,6 +1346,7 @@
       }
       
       try {
+        // Kirim data ke Supabase
         const { data, error } = await supabaseClient
           .from('stok_opname_scans')
           .insert(dataScan.map(item => ({
@@ -1635,6 +1360,7 @@
         
         alert(`✅ ${dataScan.length} data berhasil disimpan ke Supabase!`);
         
+        // Optional: Kosongkan data setelah disimpan
         if (confirm("Kosongkan data lokal setelah disimpan ke Supabase?")) {
           dataScan = [];
           saveDataToLocalStorage();
@@ -1665,19 +1391,23 @@
 
     // =============== SETUP EVENT LISTENERS ===============
     function setupEventListeners() {
+      // Tab menu
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
           const tabId = this.dataset.tab;
           
+          // Sembunyikan semua tab content
           document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
           });
           
+          // Tampilkan tab yang dipilih
           const selectedTab = document.getElementById(tabId);
           if (selectedTab) {
             selectedTab.classList.add('active');
           }
           
+          // Update tab menu
           document.querySelectorAll('.tab').forEach(tab => {
             tab.classList.remove('active');
           });
@@ -1685,6 +1415,7 @@
         });
       });
       
+      // Scan Tab
       document.getElementById('lockLokasiBtn')?.addEventListener('click', lockLokasi);
       document.getElementById('ubahLokasiBtn')?.addEventListener('click', ubahLokasi);
       document.getElementById('uploadFile')?.addEventListener('change', handleFileUpload);
@@ -1695,6 +1426,7 @@
       document.getElementById('scannerButton')?.addEventListener('click', toggleScanner);
       document.getElementById('tambahDataBtn')?.addEventListener('click', tambahData);
       
+      // Upload Tab
       document.getElementById('lockUploadLokasiBtn')?.addEventListener('click', lockUploadLokasi);
       document.getElementById('ubahUploadLokasiBtn')?.addEventListener('click', ubahUploadLokasi);
       document.getElementById('bulkUploadFile')?.addEventListener('change', handleBulkFileUpload);
@@ -1704,22 +1436,26 @@
       document.getElementById('saveUploadedDataBtn')?.addEventListener('click', saveUploadedData);
       document.getElementById('clearUploadedDataBtn')?.addEventListener('click', clearUploadedData);
       
+      // Main Buttons
       document.getElementById('exportDataBtn')?.addEventListener('click', exportToExcel);
       document.getElementById('showLocationDataBtn')?.addEventListener('click', showLocationDataModal);
       document.getElementById('saveToSupabaseBtn')?.addEventListener('click', saveToSupabase);
       document.getElementById('showSupabaseConfigBtn')?.addEventListener('click', showSupabaseConfig);
       document.getElementById('hapusSemuaDataBtn')?.addEventListener('click', hapusSemuaData);
       
+      // Supabase Modal
       document.getElementById('saveSupabaseConfigBtn')?.addEventListener('click', saveSupabaseConfig);
       document.getElementById('cancelSupabaseConfigBtn')?.addEventListener('click', () => {
         document.getElementById('supabaseModal').style.display = 'none';
       });
       
+      // Location Modal
       document.getElementById('loadLocationDataBtn')?.addEventListener('click', loadSelectedLocationData);
       document.getElementById('closeLocationModalBtn')?.addEventListener('click', () => {
         document.getElementById('locationModal').style.display = 'none';
       });
       
+      // Qty Modal
       document.getElementById('closeQtyModalBtn')?.addEventListener('click', () => {
         document.getElementById('qtyModal').style.display = 'none';
       });
@@ -1733,12 +1469,14 @@
       document.getElementById('selectAllCheckbox')?.addEventListener('change', selectAllItems);
       document.getElementById('saveQtyBtn')?.addEventListener('click', saveQtyToDataScan);
       
+      // Event listener untuk checkbox di tabel qty
       document.addEventListener('change', function(e) {
         if (e.target.classList.contains('item-checkbox')) {
           updateSelectedCount();
         }
       });
       
+      // Allow Enter key to add data
       document.getElementById('barcodeInput')?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -1753,14 +1491,17 @@
         }
       });
       
+      // Close modal when clicking outside
       window.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal')) {
           e.target.style.display = 'none';
         }
       });
       
+      // Handle page visibility change (tab switching)
       document.addEventListener('visibilitychange', function() {
         if (document.hidden && scanner && cameraActive) {
+          // Hentikan scanner saat tab tidak aktif
           scanner.stop().then(() => {
             cameraActive = false;
             scanner = null;
@@ -1774,6 +1515,7 @@
       });
     }
 
+    // =============== START APPLICATION ===============
     document.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
