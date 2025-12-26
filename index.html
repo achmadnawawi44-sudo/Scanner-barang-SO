@@ -1346,19 +1346,29 @@
       }
       
       try {
-        // Kirim data ke Supabase
+        // **PERUBAHAN UTAMA: Sekarang menyimpan ke tabel stok_barang**
+        const dataToInsert = dataScan.map(item => ({
+          user: item.user,
+          lokasi: item.lokasi,
+          barcode: item.barcode,
+          nama: item.nama,
+          qty: item.qty,
+          scanned_at: new Date().toISOString()  // Field timestamp
+        }));
+        
+        console.log('Menyimpan data ke Supabase:', dataToInsert);
+        
+        // Simpan ke tabel stok_barang
         const { data, error } = await supabaseClient
-          .from('stok_opname_scans')
-          .insert(dataScan.map(item => ({
-            ...item,
-            scanned_at: new Date().toISOString()
-          })));
+          .from('stok_barang')
+          .insert(dataToInsert);
         
         if (error) {
+          console.error('Error saving to Supabase:', error);
           throw error;
         }
         
-        alert(`✅ ${dataScan.length} data berhasil disimpan ke Supabase!`);
+        alert(`✅ ${dataScan.length} data berhasil disimpan ke tabel stok_barang!`);
         
         // Optional: Kosongkan data setelah disimpan
         if (confirm("Kosongkan data lokal setelah disimpan ke Supabase?")) {
