@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scanner Stok Barang</title>
+  <title>Scanner Stok Barang Modern</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -177,6 +177,151 @@
       font-weight: bold;
     }
     
+    /* Status produk modern */
+    .produk-status-box {
+      margin: 15px 0;
+      padding: 12px;
+      background: #e8f5e9;
+      border-radius: 8px;
+      border-left: 4px solid #4CAF50;
+    }
+    .produk-status-box.warning {
+      background: #fff3cd;
+      border-left-color: #ff9800;
+    }
+    .produk-status-box.error {
+      background: #f8d7da;
+      border-left-color: #f44336;
+    }
+    .produk-status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .produk-status-title {
+      font-weight: bold;
+      color: #2e7d32;
+    }
+    .produk-status-details {
+      font-size: 13px;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .produk-count {
+      background: #4CAF50;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    /* Loading progress untuk produk */
+    .produk-loading-progress {
+      margin: 10px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      display: none;
+    }
+    .produk-loading-progress.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .progress-bar-outer {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #2196F3);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    
+    /* Compact product status */
+    .produk-status-compact {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .produk-stats {
+      display: flex;
+      gap: 15px;
+      font-size: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .stat-badge {
+      background: #4CAF50;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 11px;
+    }
+    
+    /* Mode modern indicator */
+    .modern-indicator {
+      display: inline-block;
+      background: linear-gradient(45deg, #2196F3, #4CAF50);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    
+    /* Barang baru form */
+    .new-item-form {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px dashed #4CAF50;
+      display: none;
+    }
+    .new-item-form.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Load data besar warning */
+    .big-data-warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 6px;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 13px;
+      color: #856404;
+    }
+    
     @media (max-width: 768px) {
       body { padding: 10px; }
       .button-group { flex-direction: column; }
@@ -187,12 +332,16 @@
         width: 95%;
         margin: 10% auto;
       }
+      .produk-stats {
+        flex-direction: column;
+        gap: 8px;
+      }
     }
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/achmadnawawi44-sudo/Scanner-barang-SO/main/goto.png" alt="Logo Perusahaan" style="width:150px; margin-bottom:10px;">
-  <h2>Scanner Stok Opname Goto Living</h2>
+  <h2>Scanner Stok Opname Goto Living <span class="modern-indicator">MODERN MODE</span></h2>
 
   <!-- Modal Supabase Settings -->
   <div id="supabaseModal" class="modal">
@@ -225,8 +374,9 @@
         </div>
         <div style="font-size: 12px; color: #666; margin-top: 8px;">
           • <strong>Barcode</strong>: Kode unik barang<br>
-          • <strong>Nama</strong>: Nama barang<br>
-          • <strong>Qty</strong>: Jumlah stok (akan diisi manual)
+          • <strong>Nama</strong>: Nama barang (diambil dari tabel produk)<br>
+          • <strong>Qty</strong>: Jumlah stok (akan diisi manual)<br>
+          • <strong>Urutan</strong>: ID terkecil → terbesar
         </div>
       </div>
       
@@ -266,7 +416,7 @@
     </div>
   </div>
 
-  <!-- Modal Isi Qty per Item (DIPERBARUI - BORDER 0px) -->
+  <!-- Modal Isi Qty per Item -->
   <div id="qtyModal" class="modal">
     <div class="modal-content long">
       <h3 style="margin-top: 0;">✏️ Isi Qty untuk <span id="modalLocationName" style="color: #2196F3;"></span></h3>
@@ -279,6 +429,10 @@
           <span class="template-item" style="border-color: #4CAF50;">Nama</span> | 
           <span class="template-item" style="border-color: #4CAF50;">Qty</span>
         </div>
+        <div style="font-size: 12px; color: #666; margin-top: 8px;">
+          • Urutan: <strong>ID terkecil → terbesar</strong><br>
+          • Nama barang diambil dari tabel produk
+        </div>
       </div>
       
       <div style="margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 4px;">
@@ -290,7 +444,7 @@
         </div>
       </div>
       
-      <!-- Container tabel dengan border 0px -->
+      <!-- Container tabel -->
       <div style="max-height: 400px; overflow-y: auto; border: 0px; border-radius: 4px;">
         <table class="location-items-table">
           <thead>
@@ -323,13 +477,35 @@
     </div>
   </div>
 
+  <!-- Modal Tambah Barang Baru -->
+  <div id="newItemModal" class="modal">
+    <div class="modal-content">
+      <h3>➕ Tambah Barang Baru</h3>
+      <p>Barang dengan barcode <strong id="newBarcodeText"></strong> tidak ditemukan di database.</p>
+      
+      <div style="text-align: left; margin: 20px 0;">
+        <label>📦 Nama Barang:</label>
+        <input type="text" id="newItemName" placeholder="Masukkan nama barang" style="width: 100%; padding: 8px; margin-bottom: 15px;" />
+        
+        <label>📍 Lokasi Default (opsional):</label>
+        <input type="text" id="newItemLocation" placeholder="Contoh: Gudang Utama" style="width: 100%; padding: 8px;" />
+      </div>
+      
+      <div class="modal-buttons">
+        <button id="saveNewItemBtn" style="background-color: #4CAF50; color: white;">💾 Simpan ke Database</button>
+        <button id="useTemporaryBtn" style="background-color: #2196F3; color: white;">📝 Gunakan Sementara</button>
+        <button id="cancelNewItemBtn" style="background-color: #f44336; color: white;">✕ Batal</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Tab Container -->
   <div class="tab-container">
     <div class="tab active" data-tab="scanTab">Mode Scan</div>
     <div class="tab" data-tab="uploadTab">Mode Upload Data</div>
   </div>
 
-  <!-- Scan Tab -->
+  <!-- Scan Tab (MODERNIZED) -->
   <div id="scanTab" class="tab-content active">
     <label>👤 User:</label>
     <input type="text" id="userInput" placeholder="Nama user" value="User 1" />
@@ -343,9 +519,64 @@
 
     <hr>
 
-    <label>📤 Upload File Data Barang (CSV/XLSX):</label>
-    <input type="file" id="uploadFile" accept=".csv, .xlsx" />
-    <button id="uploadFileBtn">Upload</button>
+    <!-- STATUS PRODUK MODERN DIPERBAIKI -->
+    <div id="produkStatusBox" class="produk-status-box">
+      <div class="produk-status-header">
+        <span class="produk-status-title">📦 Database Produk Supabase</span>
+        <div class="produk-status-compact">
+          <span id="produkCount" class="produk-count">0 produk</span>
+          <button id="refreshProdukBtn" class="refresh-btn" title="Refresh data" style="background: #2196F3; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer;">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+      
+      <!-- Progress bar loading untuk data besar -->
+      <div id="produkLoadingProgress" class="produk-loading-progress">
+        <div class="progress-info">
+          <span id="progressText">Memuat data...</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar-outer">
+          <div id="progressBarInner" class="progress-bar-inner"></div>
+        </div>
+        <div id="progressDetails" style="font-size: 11px; color: #666; margin-top: 5px;"></div>
+      </div>
+      
+      <!-- Status info -->
+      <div class="produk-status-details">
+        <div>
+          <span id="produkStatusText">Klik refresh untuk memuat data dari Supabase</span>
+          <div id="produkLastUpdate" style="font-size: 11px; color: #777; margin-top: 2px;">
+            Terakhir diperbarui: -
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quick stats -->
+      <div id="produkStats" class="produk-stats" style="display: none;">
+        <div class="stat-item">
+          <span>📊 Total:</span>
+          <span id="statTotal" class="stat-badge">0</span>
+        </div>
+        <div class="stat-item">
+          <span>⚡ Cache:</span>
+          <span id="statCache" class="stat-badge" style="background: #2196F3;">0</span>
+        </div>
+        <div class="stat-item">
+          <span>🔄 Refresh:</span>
+          <span id="statRefresh" class="stat-badge" style="background: #ff9800;">-</span>
+        </div>
+      </div>
+      
+      <!-- Warning untuk data besar -->
+      <div id="bigDataWarning" class="big-data-warning" style="display: none; margin-top: 10px;">
+        <strong>⚠️ Data Besar Terdeteksi</strong>
+        <div style="font-size: 12px; margin-top: 5px;">
+          Proses memuat data besar dari Supabase. Harap tunggu...
+        </div>
+      </div>
+    </div>
 
     <hr>
 
@@ -356,6 +587,26 @@
     
     <div id="cameraStatus" class="camera-status inactive">Kamera tidak aktif</div>
     <div id="reader"></div>
+
+    <!-- Form untuk barang yang tidak ditemukan -->
+    <div id="newItemForm" class="new-item-form">
+      <div style="font-weight: bold; color: #2196F3; margin-bottom: 10px;">➕ Barang Baru Ditemukan</div>
+      <div style="margin-bottom: 10px;">
+        <label>Barcode: <strong id="displayBarcode"></strong></label>
+        <input type="text" id="newItemNameInput" placeholder="Masukkan nama barang" style="width: 100%; padding: 8px; margin: 5px 0;" />
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button id="saveNewItemQuickBtn" style="flex: 1; background-color: #4CAF50; color: white;">
+            💾 Simpan ke DB
+          </button>
+          <button id="useTempItemBtn" style="flex: 1; background-color: #2196F3; color: white;">
+            📝 Gunakan Sementara
+          </button>
+          <button id="cancelNewItemBtn2" style="flex: 1; background-color: #f44336; color: white;">
+            ✕ Batal
+          </button>
+        </div>
+      </div>
+    </div>
 
     <label>📦 Nama Barang:</label>
     <input type="text" id="namaBarangInput" disabled />
@@ -381,7 +632,7 @@
     </table>
   </div>
 
-  <!-- Upload Data Tab -->
+  <!-- Upload Data Tab (Tetap untuk backup) -->
   <div id="uploadTab" class="tab-content">
     <label>👤 User:</label>
     <input type="text" id="uploadUserInput" placeholder="Nama user" value="User 1" />
@@ -394,6 +645,15 @@
     </div>
 
     <hr>
+
+    <div class="produk-status-box warning">
+      <div class="produk-status-header">
+        <span class="produk-status-title">⚠️ Mode Upload (Legacy)</span>
+      </div>
+      <div style="font-size: 13px; color: #856404;">
+        Mode ini hanya untuk backup jika koneksi Supabase bermasalah. Gunakan Mode Scan untuk pengalaman modern.
+      </div>
+    </div>
 
     <label>📤 Upload File Data Barang (CSV/XLSX):</label>
     <input type="file" id="bulkUploadFile" accept=".csv, .xlsx" />
@@ -432,6 +692,8 @@
   <script>
     // =============== VARIABEL GLOBAL ===============
     let dataBarang = {};
+    let produkData = {};
+    let produkArray = []; // Untuk pencarian cepat
     let dataScan = [];
     let lokasiTerkunci = false;
     let uploadLokasiTerkunci = false;
@@ -440,18 +702,33 @@
     let supabaseClient = null;
     let isFetchingData = false;
     let cameraActive = false;
-    let isFillingQty = false; // Flag untuk menandai sedang mengisi Qty
+    let isFillingQty = false;
+    let isProdukLoaded = false;
+    let produkLoadedTime = null;
+    let currentScannedBarcode = '';
+    let isFetchingAllProduk = false;
 
     // =============== FUNGSI INISIALISASI ===============
     function initApp() {
-      console.log('Initializing app...');
+      console.log('Initializing modern app...');
       
       try {
         const savedDataScan = localStorage.getItem("dataScan");
         const savedUploadedItems = localStorage.getItem("uploadedItems");
+        const savedProdukData = localStorage.getItem("produkData");
+        const savedProdukTime = localStorage.getItem("produkLoadedTime");
         
         if (savedDataScan) dataScan = JSON.parse(savedDataScan);
         if (savedUploadedItems) uploadedItems = JSON.parse(savedUploadedItems);
+        if (savedProdukData) {
+          produkData = JSON.parse(savedProdukData);
+          optimizeProdukData();
+          updateProdukStatus(`✅ ${Object.keys(produkData).length} produk (cache lokal)`);
+        }
+        if (savedProdukTime) {
+          produkLoadedTime = savedProdukTime;
+          updateLastUpdateTime();
+        }
       } catch (error) {
         console.error("Error loading from localStorage:", error);
       }
@@ -463,12 +740,19 @@
       const supabaseKey = localStorage.getItem("supabaseKey");
       
       if (supabaseUrl && supabaseKey) {
-        initSupabaseClient(supabaseUrl, supabaseKey);
+        if (initSupabaseClient(supabaseUrl, supabaseKey)) {
+          // Auto-load produk data jika Supabase tersedia dan cache kosong
+          if (Object.keys(produkData).length === 0) {
+            setTimeout(async () => {
+              await loadProdukDataFromSupabase();
+            }, 1000);
+          }
+        }
+      } else {
+        updateProdukStatus("⚠️ Supabase belum dikonfigurasi", "warning");
       }
       
       setupEventListeners();
-      
-      // Setup warning untuk sebelumunload ketika sedang mengisi Qty
       setupBeforeUnloadWarning();
       
       setTimeout(() => {
@@ -477,11 +761,1059 @@
       }, 500);
     }
 
-    // =============== FUNGSI WARNING UNTUK REFRESH ===============
+    // =============== FUNGSI LOAD SEMUA DATA DARI SUPABASE (DIPERBAIKI) ===============
+    async function loadProdukDataFromSupabase() {
+      if (!supabaseClient) {
+        updateProdukStatus("❌ Supabase tidak terhubung", "error");
+        return false;
+      }
+      
+      if (isFetchingAllProduk) {
+        alert("Sedang memuat data produk, harap tunggu...");
+        return false;
+      }
+      
+      isFetchingAllProduk = true;
+      updateProdukStatus("🔄 Memulai proses pengambilan data...", "warning");
+      showProdukLoadingProgress();
+      
+      try {
+        console.log('Memulai pengambilan data produk dari Supabase...');
+        
+        // Tentukan nama tabel dan field (sesuaikan dengan database Anda)
+        const tableName = 'produk'; // Ganti jika nama tabel berbeda
+        const barcodeField = 'barcode'; // Ganti jika nama field berbeda
+        const namaField = 'nama'; // Ganti jika nama field berbeda
+        
+        // 1. HITUNG TOTAL DATA
+        updateProdukLoadingProgress(5, 'Menghitung total data produk...');
+        
+        const { count, error: countError } = await supabaseClient
+          .from(tableName)
+          .select('*', { count: 'exact', head: true });
+        
+        if (countError) {
+          console.error('Error menghitung data:', countError);
+          updateProdukStatus(`❌ Error: ${countError.message}`, "error");
+          hideProdukLoadingProgress();
+          isFetchingAllProduk = false;
+          return false;
+        }
+        
+        const totalData = count || 0;
+        console.log(`Total data di Supabase: ${totalData}`);
+        
+        if (totalData === 0) {
+          updateProdukStatus("⚠️ Tidak ada data produk di database", "warning");
+          hideProdukLoadingProgress();
+          isFetchingAllProduk = false;
+          return false;
+        }
+        
+        // Tampilkan warning untuk data besar
+        if (totalData > 5000) {
+          document.getElementById('bigDataWarning').style.display = 'block';
+        }
+        
+        // 2. AMBIL SEMUA DATA DENGAN PAGINATION
+        const pageSize = 1000; // Max rows per request dari Supabase
+        const totalPages = Math.ceil(totalData / pageSize);
+        let allProducts = [];
+        let duplicateBarcodes = [];
+        
+        updateProdukLoadingProgress(
+          10,
+          `Menyiapkan pengambilan ${totalData.toLocaleString()} data...`,
+          `Akan mengambil ${totalPages} halaman`
+        );
+        
+        for (let page = 0; page < totalPages; page++) {
+          const from = page * pageSize;
+          const to = Math.min(from + pageSize - 1, totalData - 1);
+          const currentProgress = 10 + Math.floor((page / totalPages) * 80);
+          
+          // Update progress
+          updateProdukLoadingProgress(
+            currentProgress,
+            `Mengambil data ${(from + 1).toLocaleString()}-${(to + 1).toLocaleString()} dari ${totalData.toLocaleString()}...`,
+            `Halaman ${page + 1}/${totalPages}`
+          );
+          
+          console.log(`Mengambil halaman ${page + 1}/${totalPages} (${from}-${to})...`);
+          
+          const { data, error } = await supabaseClient
+            .from(tableName)
+            .select(`${barcodeField}, ${namaField}`)
+            .range(from, to)
+            .order('id', { ascending: true }); // Ganti 'id' dengan kolom yang sesuai
+        
+          if (error) {
+            console.error(`Error mengambil halaman ${page + 1}:`, error);
+            updateProdukStatus(`❌ Error: ${error.message}`, "error");
+            hideProdukLoadingProgress();
+            document.getElementById('bigDataWarning').style.display = 'none';
+            isFetchingAllProduk = false;
+            return false;
+          }
+          
+          if (data && data.length > 0) {
+            allProducts = allProducts.concat(data);
+          }
+          
+          // Jeda kecil untuk menghindari rate limit
+          if (page < totalPages - 1) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+        }
+        
+        // 3. PROCESS DATA - PERBAIKAN: TIDAK MENGHILANGKAN DUPLICATE
+        updateProdukLoadingProgress(90, 'Memproses data yang diambil...', 'Mengorganisir data...');
+        
+        if (allProducts.length === 0) {
+          updateProdukStatus("⚠️ Tidak ada data produk ditemukan", "warning");
+          hideProdukLoadingProgress();
+          document.getElementById('bigDataWarning').style.display = 'none';
+          isFetchingAllProduk = false;
+          return false;
+        }
+        
+        // Reset produkData
+        produkData = {};
+        dataBarang = {};
+        
+        // PERBAIKAN: Simpan SEMUA data, termasuk duplicate
+        // Tidak menggunakan Set() yang menghilangkan duplicate
+        let loadedCount = 0;
+        let duplicateCount = 0;
+        const barcodeMap = new Map(); // Untuk melacak duplicate
+        
+        allProducts.forEach(item => {
+          const barcode = item[barcodeField]?.toString().trim();
+          const nama = item[namaField]?.toString().trim();
+          
+          if (barcode && nama) {
+            // Catat jika ada barcode duplicate
+            if (produkData[barcode]) {
+              duplicateCount++;
+              duplicateBarcodes.push(barcode);
+              // Untuk barcode duplicate, kita buat key unik
+              const uniqueKey = `${barcode}_${duplicateCount}`;
+              produkData[uniqueKey] = nama;
+              dataBarang[uniqueKey] = nama;
+            } else {
+              // Simpan dengan key asli
+              produkData[barcode] = nama;
+              dataBarang[barcode] = nama;
+              barcodeMap.set(barcode, true);
+            }
+            loadedCount++;
+          }
+        });
+        
+        // 4. SIMPAN KE LOCALSTORAGE
+        updateProdukLoadingProgress(95, 'Menyimpan data ke cache lokal...');
+        
+        try {
+          // Check localStorage capacity
+          const dataStr = JSON.stringify(produkData);
+          if (dataStr.length > 5 * 1024 * 1024) { // >5MB
+            console.warn('Data terlalu besar, menyimpan sebagian ke cache...');
+            // Simpan hanya 10000 item pertama
+            const limitedData = {};
+            let count = 0;
+            for (const [barcode, nama] of Object.entries(produkData)) {
+              if (count++ < 10000) {
+                limitedData[barcode] = nama;
+              } else {
+                break;
+              }
+            }
+            localStorage.setItem("produkData", JSON.stringify(limitedData));
+          } else {
+            localStorage.setItem("produkData", dataStr);
+          }
+          localStorage.setItem("produkLoadedTime", new Date().toISOString());
+        } catch (e) {
+          console.error("Error saving to localStorage:", e);
+        }
+        
+        // 5. OPTIMASI DATA UNTUK PENCARIAN CEPAT
+        updateProdukLoadingProgress(98, 'Mengoptimasi data untuk pencarian cepat...');
+        optimizeProdukData();
+        
+        // 6. UPDATE UI
+        updateProdukLoadingProgress(100, 'Selesai!');
+        
+        setTimeout(() => {
+          hideProdukLoadingProgress();
+          document.getElementById('bigDataWarning').style.display = 'none';
+          
+          let statusMessage = `✅ ${loadedCount.toLocaleString()} produk dimuat`;
+          if (duplicateCount > 0) {
+            statusMessage += ` (${duplicateCount} barcode duplicate ditemukan)`;
+            
+            // Tampilkan info duplicate
+            if (duplicateCount > 0) {
+              console.log('Barcode duplicate ditemukan:', duplicateBarcodes.slice(0, 5));
+            }
+          }
+          
+          updateProdukStatus(statusMessage);
+          updateLastUpdateTime();
+          
+          // Tampilkan notifikasi untuk data besar
+          if (loadedCount > 5000) {
+            setTimeout(() => {
+              alert(`✅ Berhasil memuat ${loadedCount.toLocaleString()} produk dari database Supabase!\n\nData siap digunakan untuk scanning.`);
+            }, 500);
+          }
+          
+          isFetchingAllProduk = false;
+        }, 1000);
+        
+        console.log(`✅ ${loadedCount} produk berhasil dimuat dari Supabase (${duplicateCount} duplicate)`);
+        return true;
+        
+      } catch (error) {
+        console.error('Error dalam loadProdukDataFromSupabase:', error);
+        updateProdukStatus(`❌ Error: ${error.message}`, "error");
+        hideProdukLoadingProgress();
+        document.getElementById('bigDataWarning').style.display = 'none';
+        isFetchingAllProduk = false;
+        return false;
+      }
+    }
+
+    // =============== FUNGSI PENCARIAN BARANG (DIPERBAIKI) ===============
+    async function cariBarangByBarcode(barcode) {
+      const barcodeStr = barcode.toString().trim();
+      
+      // 1. Cek cache langsung (paling cepat) - PERBAIKAN: cari semua kemungkinan
+      if (produkData[barcodeStr]) {
+        return produkData[barcodeStr];
+      }
+      
+      // 2. Cari juga dengan pattern duplicate
+      for (const [key, value] of Object.entries(produkData)) {
+        if (key.startsWith(barcodeStr + '_')) {
+          return value;
+        }
+      }
+      
+      // 3. Jika tidak ditemukan, coba cari dengan case-insensitive di array
+      if (produkArray && produkArray.length > 0) {
+        const found = produkArray.find(item => 
+          item.barcodeLower === barcodeStr.toLowerCase() || 
+          item.barcode.startsWith(barcodeStr + '_')
+        );
+        if (found) {
+          // Simpan ke cache untuk next time
+          produkData[barcodeStr] = found.nama;
+          return found.nama;
+        }
+      }
+      
+      // 4. Jika masih tidak ditemukan, cari langsung di Supabase (real-time)
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('produk')
+            .select('nama')
+            .eq('barcode', barcodeStr)
+            .maybeSingle();
+          
+          if (!error && data && data.nama) {
+            // Simpan ke cache
+            produkData[barcodeStr] = data.nama;
+            dataBarang[barcodeStr] = data.nama;
+            
+            // Tambahkan ke array untuk pencarian cepat
+            produkArray.push({
+              barcode: barcodeStr,
+              nama: data.nama,
+              barcodeLower: barcodeStr.toLowerCase()
+            });
+            
+            return data.nama;
+          }
+        } catch (error) {
+          console.error('Error mencari barang langsung:', error);
+        }
+      }
+      
+      return null;
+    }
+
+    // =============== FUNGSI PROGRESS BAR ===============
+    function showProdukLoadingProgress() {
+      const progressBar = document.getElementById('produkLoadingProgress');
+      if (progressBar) {
+        progressBar.style.display = 'block';
+        progressBar.classList.add('active');
+      }
+    }
+
+    function updateProdukLoadingProgress(progress, text, details = '') {
+      const progressText = document.getElementById('progressText');
+      const progressPercent = document.getElementById('progressPercent');
+      const progressBarInner = document.getElementById('progressBarInner');
+      const progressDetails = document.getElementById('progressDetails');
+      
+      if (progressText && progressPercent && progressBarInner) {
+        progressText.textContent = text;
+        progressPercent.textContent = `${progress}%`;
+        progressBarInner.style.width = `${progress}%`;
+        
+        if (details && progressDetails) {
+          progressDetails.textContent = details;
+        }
+      }
+    }
+
+    function hideProdukLoadingProgress() {
+      const progressBar = document.getElementById('produkLoadingProgress');
+      if (progressBar) {
+        setTimeout(() => {
+          progressBar.style.display = 'none';
+          progressBar.classList.remove('active');
+        }, 500);
+      }
+    }
+
+    // =============== FUNGSI OPTIMASI DATA ===============
+    function optimizeProdukData() {
+      // Buat array untuk pencarian cepat
+      produkArray = Object.entries(produkData).map(([barcode, nama]) => ({
+        barcode,
+        nama,
+        barcodeLower: barcode.toLowerCase()
+      }));
+      
+      console.log(`✅ Data produk dioptimasi untuk ${produkArray.length} item`);
+      updateProdukStats();
+    }
+
+    function updateProdukStats() {
+      const produkStats = document.getElementById('produkStats');
+      const statTotal = document.getElementById('statTotal');
+      const statCache = document.getElementById('statCache');
+      const statRefresh = document.getElementById('statRefresh');
+      
+      if (!produkStats || !statTotal) return;
+      
+      const count = Object.keys(produkData).length;
+      
+      if (count > 0) {
+        produkStats.style.display = 'flex';
+        statTotal.textContent = count.toLocaleString();
+        statCache.textContent = 'Aktif';
+        
+        // Update refresh time
+        if (produkLoadedTime) {
+          const now = new Date();
+          const loaded = new Date(produkLoadedTime);
+          const diffMinutes = Math.floor((now - loaded) / (1000 * 60));
+          
+          let timeText;
+          if (diffMinutes < 1) timeText = 'Baru';
+          else if (diffMinutes < 60) timeText = `${diffMinutes}m`;
+          else if (diffMinutes < 1440) timeText = `${Math.floor(diffMinutes/60)}h`;
+          else timeText = `${Math.floor(diffMinutes/1440)}d`;
+          
+          if (statRefresh) statRefresh.textContent = timeText;
+        }
+      } else {
+        produkStats.style.display = 'none';
+      }
+    }
+
+    // =============== FUNGSI UPDATE STATUS ===============
+    function updateProdukStatus(message, type = "success") {
+      const statusBox = document.getElementById("produkStatusBox");
+      const statusText = document.getElementById("produkStatusText");
+      const produkCount = document.getElementById("produkCount");
+      
+      if (!statusBox || !statusText || !produkCount) return;
+      
+      statusText.textContent = message;
+      statusBox.className = "produk-status-box";
+      
+      if (type === "warning") {
+        statusBox.classList.add("warning");
+      } else if (type === "error") {
+        statusBox.classList.add("error");
+      }
+      
+      // Update count
+      const count = Object.keys(produkData).length;
+      produkCount.textContent = `${count.toLocaleString()} produk`;
+      
+      updateProdukStats();
+    }
+
+    function updateLastUpdateTime() {
+      const lastUpdateEl = document.getElementById("produkLastUpdate");
+      if (!lastUpdateEl || !produkLoadedTime) return;
+      
+      const date = new Date(produkLoadedTime);
+      const timeStr = date.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      const dateStr = date.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+      
+      lastUpdateEl.textContent = `Terakhir diperbarui: ${dateStr} ${timeStr}`;
+      produkLoadedTime = new Date().toISOString();
+    }
+
+    // =============== FUNGSI SCANNING ===============
+    async function handleBarcodeInput() {
+      const barcodeInput = document.getElementById("barcodeInput");
+      const namaBarangInput = document.getElementById("namaBarangInput");
+      const barcode = barcodeInput.value.trim();
+      
+      if (barcode) {
+        // Reset new item form jika ada
+        hideNewItemForm();
+        
+        // Tampilkan loading state
+        namaBarangInput.value = "🔍 Mencari...";
+        namaBarangInput.style.color = "#666";
+        
+        // Beri jeda kecil untuk user melihat
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Cari barang
+        const namaBarang = await cariBarangByBarcode(barcode);
+        
+        if (namaBarang) {
+          namaBarangInput.value = namaBarang;
+          namaBarangInput.style.color = "#000";
+          
+          // Auto-focus ke Qty input
+          setTimeout(() => {
+            document.getElementById("qtyInput").focus();
+            document.getElementById("qtyInput").select();
+          }, 100);
+        } else {
+          // Barang tidak ditemukan
+          namaBarangInput.value = "❌ Tidak ditemukan";
+          namaBarangInput.style.color = "#f44336";
+          
+          // Tampilkan form untuk menambahkan barang baru
+          showNewItemForm(barcode);
+        }
+      }
+    }
+
+    // =============== FUNGSI BARANG BARU ===============
+    function showNewItemForm(barcode) {
+      currentScannedBarcode = barcode;
+      
+      const form = document.getElementById("newItemForm");
+      const displayBarcode = document.getElementById("displayBarcode");
+      const namaInput = document.getElementById("newItemNameInput");
+      
+      if (form && displayBarcode && namaInput) {
+        displayBarcode.textContent = barcode;
+        namaInput.value = '';
+        namaInput.focus();
+        form.classList.add("show");
+      }
+    }
+
+    function hideNewItemForm() {
+      const form = document.getElementById("newItemForm");
+      if (form) {
+        form.classList.remove("show");
+      }
+      currentScannedBarcode = '';
+    }
+
+    // =============== FUNGSI SUPABASE ===============
+    function initSupabaseClient(url, key) {
+      try {
+        if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
+          throw new Error('URL Supabase tidak valid.');
+        }
+        
+        if (key.length < 10) {
+          throw new Error('API Key tidak valid');
+        }
+        
+        supabaseClient = window.supabase.createClient(url, key);
+        console.log("Supabase initialized successfully");
+        return true;
+      } catch (error) {
+        console.error("Error initializing Supabase:", error);
+        return false;
+      }
+    }
+
+    function showSupabaseConfig() {
+      document.getElementById('supabaseUrl').value = localStorage.getItem("supabaseUrl") || "";
+      document.getElementById('supabaseKey').value = localStorage.getItem("supabaseKey") || "";
+      document.getElementById('supabaseModal').style.display = 'block';
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('supabaseUrl').value.trim();
+      const key = document.getElementById('supabaseKey').value.trim();
+      
+      if (!url || !key) {
+        alert("URL dan API Key Supabase harus diisi.");
+        return;
+      }
+      
+      if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
+        alert("URL Supabase harus dalam format: https://your-project.supabase.co");
+        return;
+      }
+      
+      localStorage.setItem("supabaseUrl", url);
+      localStorage.setItem("supabaseKey", key);
+      
+      if (initSupabaseClient(url, key)) {
+        alert("✅ Konfigurasi Supabase berhasil disimpan.");
+        document.getElementById('supabaseModal').style.display = 'none';
+        
+        // Auto-load produk setelah konfigurasi
+        setTimeout(async () => {
+          await loadProdukDataFromSupabase();
+        }, 500);
+      }
+    }
+
+    // =============== FUNGSI MODAL LOKASI (DIPERBAIKI) ===============
+    async function showLocationDataModal() {
+      if (!supabaseClient) {
+        alert("Silakan konfigurasi Supabase terlebih dahulu.");
+        showSupabaseConfig();
+        return;
+      }
+      
+      if (isFetchingData) {
+        alert("Sedang mengambil data, harap tunggu...");
+        return;
+      }
+      
+      document.getElementById('locationModal').style.display = 'block';
+      await loadAllDataFromSupabase();
+    }
+
+    async function loadAllDataFromSupabase() {
+      if (isFetchingData) return;
+      
+      try {
+        isFetchingData = true;
+        const locationList = document.getElementById('locationList');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const progressBar = document.getElementById('progressBar');
+        const loadingStatus = document.getElementById('loadingStatus');
+        const loadingDetails = document.getElementById('loadingDetails');
+        
+        if (!locationList) return;
+        
+        locationList.innerHTML = '<div style="text-align: center; padding: 20px;">Memuat data dari Supabase...</div>';
+        progressBarContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+        loadingStatus.style.display = 'block';
+        
+        console.log('Memulai pengambilan data dari Supabase...');
+        
+        loadingDetails.textContent = 'Menghitung total data...';
+        
+        // Hitung total data
+        const { count, error: countError } = await supabaseClient
+          .from('stok_barang')
+          .select('*', { count: 'exact', head: true });
+        
+        if (countError) {
+          throw countError;
+        }
+        
+        const totalData = count || 0;
+        console.log(`Total data di Supabase: ${totalData}`);
+        loadingDetails.textContent = `Total data: ${totalData.toLocaleString()} item`;
+        
+        if (totalData === 0) {
+          locationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Tidak ada data ditemukan di Supabase.</div>';
+          progressBarContainer.style.display = 'none';
+          loadingStatus.style.display = 'none';
+          isFetchingData = false;
+          return;
+        }
+        
+        // **PERBAIKAN: Ambil data dengan urutan ID ASC (terkecil ke terbesar)**
+        loadingDetails.textContent = 'Mengambil data dari Supabase (urut ID terkecil ke terbesar)...';
+        progressBar.style.width = '50%';
+        progressBar.textContent = '50%';
+        
+        console.log('Mengambil semua data dengan urutan ID ASC...');
+        
+        let allData = [];
+        
+        // Gunakan pagination untuk menjaga performa
+        const pageSize = 1000;
+        const totalPages = Math.ceil(totalData / pageSize);
+        
+        for (let page = 0; page < totalPages; page++) {
+          const from = page * pageSize;
+          const to = Math.min(from + pageSize - 1, totalData - 1);
+          
+          loadingDetails.textContent = `Mengambil data ${(from + 1).toLocaleString()}-${(to + 1).toLocaleString()} dari ${totalData.toLocaleString()}...`;
+          progressBar.style.width = `${((page + 1) / totalPages * 100).toFixed(0)}%`;
+          progressBar.textContent = `${((page + 1) / totalPages * 100).toFixed(0)}%`;
+          
+          console.log(`Mengambil halaman ${page + 1}/${totalPages}...`);
+          
+          // **PERBAIKAN PENTING: ORDER BY id ASC (terkecil ke terbesar)**
+          const { data, error } = await supabaseClient
+            .from('stok_barang')
+            .select('barcode, nama, lokasi, qty, created_at, id')
+            .order('id', { ascending: true }) // PERUBAHAN KUNCI: id ASC untuk terkecil ke terbesar
+            .range(from, to);
+          
+          if (error) {
+            console.error('Error mengambil data:', error);
+            throw error;
+          }
+          
+          if (data && data.length > 0) {
+            allData = allData.concat(data);
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        console.log(`Total data berhasil diambil: ${allData.length} baris`);
+        
+        if (allData.length === 0) {
+          locationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Tidak ada data ditemukan di Supabase.</div>';
+          progressBarContainer.style.display = 'none';
+          loadingStatus.style.display = 'none';
+          isFetchingData = false;
+          return;
+        }
+        
+        // **VERIFIKASI: Cek urutan ID dan data**
+        console.log('Verifikasi urutan ID dan data:');
+        if (allData.length >= 5) {
+          console.log('5 data pertama (harus ID terkecil):');
+          allData.slice(0, 5).forEach((item, i) => {
+            console.log(`${i+1}. ID: ${item.id}, Barcode: ${item.barcode}, Nama: ${item.nama}, Lokasi: ${item.lokasi}`);
+          });
+        }
+        
+        loadingDetails.textContent = 'Mengelompokkan data berdasarkan lokasi...';
+        progressBar.style.width = '100%';
+        progressBar.textContent = '100%';
+        
+        // **PERBAIKAN: Kelompokkan data TANPA mengubah urutan asli**
+        const groupedData = {};
+        const locationOrderMap = new Map(); // Untuk melacak urutan lokasi pertama muncul
+        
+        allData.forEach((item, index) => {
+          const location = item.lokasi || 'Tidak Ada Lokasi';
+          if (!groupedData[location]) {
+            groupedData[location] = [];
+            // Simpan index pertama kali lokasi muncul (untuk urutan tampilan)
+            locationOrderMap.set(location, index);
+          }
+          groupedData[location].push(item);
+        });
+        
+        console.log(`Jumlah lokasi: ${Object.keys(groupedData).length}`);
+        console.log('Lokasi yang ditemukan:', Object.keys(groupedData));
+        
+        locationList.innerHTML = '';
+        
+        // **PERBAIKAN: Urutkan lokasi berdasarkan kemunculan pertama di data terurut (ID ASC)**
+        const locations = Array.from(locationOrderMap.entries())
+          .sort((a, b) => a[1] - b[1]) // Urutkan berdasarkan index kemunculan pertama
+          .map(entry => entry[0]);
+        
+        console.log('Urutan lokasi berdasarkan kemunculan pertama:', locations);
+        
+        // Tombol "Semua Lokasi" dengan data terurut berdasarkan ID
+        const allButton = document.createElement('button');
+        allButton.className = 'user-button';
+        allButton.dataset.location = 'Semua Lokasi';
+        allButton.innerHTML = `
+          📁 Semua Lokasi
+          <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
+            ${allData.length.toLocaleString()}
+          </span>
+        `;
+        allButton.onclick = (e) => {
+          selectLocationInModal('Semua Lokasi', allData, e.target);
+        };
+        locationList.appendChild(allButton);
+        
+        // **PERBAIKAN: Tampilkan lokasi sesuai urutan kemunculan pertama dalam data terurut ID ASC**
+        locations.forEach(location => {
+          if (groupedData[location].length > 0) {
+            const button = document.createElement('button');
+            button.className = 'user-button';
+            button.dataset.location = location;
+            
+            // Info ID pertama dan terakhir untuk verifikasi
+            const firstItem = groupedData[location][0];
+            const lastItem = groupedData[location][groupedData[location].length - 1];
+            
+            button.innerHTML = `
+              📍 ${location} 
+              <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
+                ${groupedData[location].length.toLocaleString()}
+              </span>
+            `;
+            
+            button.onclick = (e) => {
+              // **PERBAIKAN: Verifikasi urutan data sebelum dikirim ke modal**
+              console.log(`Mengirim data untuk lokasi "${location}":`);
+              console.log(`- Jumlah item: ${groupedData[location].length}`);
+              console.log(`- ID pertama (terkecil): ${firstItem?.id || 'N/A'}`);
+              console.log(`- ID terakhir (terbesar): ${lastItem?.id || 'N/A'}`);
+              console.log(`- Urutan: ID ${firstItem?.id || 'N/A'} → ${lastItem?.id || 'N/A'}`);
+              
+              // **PERBAIKAN: Pastikan data sudah ada nama dari join produk**
+              groupedData[location].forEach(item => {
+                if (!item.nama || item.nama === 'Nama tidak ditemukan') {
+                  // Coba cari nama dari cache produkData
+                  if (item.barcode && produkData[item.barcode]) {
+                    item.nama = produkData[item.barcode];
+                  }
+                }
+              });
+              
+              // Kirim data lokasi DENGAN URUTAN ID ASC
+              selectLocationInModal(location, groupedData[location], e.target);
+            };
+            locationList.appendChild(button);
+          }
+        });
+        
+        // Filter lokasi
+        const filterInput = document.getElementById('filterLocation');
+        if (filterInput) {
+          filterInput.oninput = function() {
+            const searchTerm = this.value.toLowerCase();
+            const buttons = locationList.querySelectorAll('.user-button');
+            buttons.forEach(button => {
+              const locationName = button.dataset.location.toLowerCase();
+              button.style.display = locationName.includes(searchTerm) ? 'block' : 'none';
+            });
+          };
+        }
+        
+        setTimeout(() => {
+          progressBarContainer.style.display = 'none';
+          loadingStatus.style.display = 'none';
+        }, 1000);
+        
+        // Tampilkan informasi lengkap
+        const statsDiv = document.createElement('div');
+        statsDiv.style.marginTop = '10px';
+        statsDiv.style.padding = '10px';
+        statsDiv.style.background = '#e8f5e8';
+        statsDiv.style.borderRadius = '4px';
+        statsDiv.style.fontSize = '12px';
+        
+        // Info urutan dan template
+        const firstItem = allData[0];
+        const lastItem = allData[allData.length - 1];
+        
+        statsDiv.innerHTML = `
+          <strong>✅ Data berhasil dimuat!</strong><br>
+          • Total data: ${allData.length.toLocaleString()} item<br>
+          • Lokasi: ${locations.length} lokasi<br>
+          • Urutan: <strong>ID ASC (${firstItem?.id || 'N/A'} → ${lastItem?.id || 'N/A'})</strong><br>
+          • Template: <strong>Barcode | Nama | Qty</strong><br>
+          <br>
+          <strong>Verifikasi:</strong><br>
+          • Data akan ditampilkan: <strong>TERKECIL → TERBESAR</strong><br>
+          • Kolom: <strong>Barcode, Nama, Qty</strong>
+        `;
+        locationList.parentNode.insertBefore(statsDiv, locationList.nextSibling);
+        
+      } catch (error) {
+        console.error('Error loading data:', error);
+        
+        const locationList = document.getElementById('locationList');
+        if (locationList) {
+          locationList.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #f44336;">
+              <h4>❌ Gagal memuat data dari Supabase</h4>
+              <p style="font-size: 12px;">${error.message}</p>
+              <p style="font-size: 11px; margin-top: 10px;">
+                Pastikan:<br>
+                1. Tabel 'stok_barang' memiliki field 'id'<br>
+                2. Koneksi internet stabil
+              </p>
+            </div>
+          `;
+        }
+        
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const loadingStatus = document.getElementById('loadingStatus');
+        if (progressBarContainer) progressBarContainer.style.display = 'none';
+        if (loadingStatus) loadingStatus.style.display = 'none';
+      } finally {
+        isFetchingData = false;
+      }
+    }
+
+    function selectLocationInModal(location, items, target) {
+      const buttons = document.querySelectorAll('#locationList .user-button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      target.classList.add('active');
+      
+      const infoDiv = document.getElementById('locationDataInfo');
+      const infoContent = document.getElementById('selectedLocationInfo');
+      const countDiv = document.getElementById('locationItemCount');
+      const loadBtn = document.getElementById('loadLocationDataBtn');
+      
+      if (infoDiv && infoContent && countDiv && loadBtn) {
+        infoDiv.style.display = 'block';
+        infoContent.innerHTML = `<strong>📍 ${location}</strong> dipilih`;
+        
+        // **PERBAIKAN: Tampilkan informasi ID range**
+        let idRangeText = '';
+        if (items.length > 0) {
+          const firstId = items[0].id;
+          const lastId = items[items.length - 1].id;
+          idRangeText = ` | ID: ${firstId} → ${lastId}`;
+        }
+        
+        countDiv.textContent = `${items.length.toLocaleString()} item ditemukan | Urutan: ID ASC (terkecil → terbesar)${idRangeText}`;
+        loadBtn.style.display = 'block';
+        
+        // Update nama barang dari produkData jika ada
+        items.forEach(item => {
+          if (item.barcode && produkData[item.barcode]) {
+            item.nama = produkData[item.barcode];
+          }
+        });
+        
+        loadBtn.dataset.location = location;
+        loadBtn.dataset.items = JSON.stringify(items);
+        
+        // **DEBUG: Log urutan ID**
+        console.log(`Data untuk lokasi "${location}":`);
+        console.log(`- ID range: ${items[0]?.id || 'N/A'} → ${items[items.length - 1]?.id || 'N/A'}`);
+        console.log(`- Jumlah item: ${items.length}`);
+      }
+    }
+
+    // =============== FUNGSI MODAL QTY (DIPERBAIKI) ===============
+    function showQtyModal(location, items) {
+      const modal = document.getElementById('qtyModal');
+      const locationNameSpan = document.getElementById('modalLocationName');
+      const currentLocationInfo = document.getElementById('currentLocationInfo');
+      const itemsBody = document.getElementById('locationItemsBody');
+      
+      if (!modal || !locationNameSpan || !currentLocationInfo || !itemsBody) return;
+      
+      locationNameSpan.textContent = location;
+      
+      // **PERBAIKAN: Tampilkan info ID range**
+      let idInfo = '';
+      if (items.length > 0) {
+        const firstId = items[0].id;
+        const lastId = items[items.length - 1].id;
+        idInfo = ` | ID: ${firstId} → ${lastId}`;
+      }
+      
+      currentLocationInfo.innerHTML = `
+        <div>
+          <strong>📍 ${location}</strong>
+          <div style="font-size: 12px; color: #666;">
+            ${items.length.toLocaleString()} item ditemukan ${idInfo}
+          </div>
+          <div style="font-size: 11px; color: #888; margin-top: 5px;">
+            Urutan: ID ${items[0]?.id || 'N/A'} → ${items[items.length-1]?.id || 'N/A'} (terkecil → terbesar)
+          </div>
+        </div>
+      `;
+      
+      itemsBody.innerHTML = '';
+      setFillingQtyStatus(true);
+      
+      if (items.length === 0) {
+        itemsBody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
+              Tidak ada item di lokasi ini
+            </td>
+          </tr>
+        `;
+      } else {
+        // **PERBAIKAN: Batasi tampilan dan tampilkan urutan ID**
+        const displayItems = items.slice(0, 500);
+        
+        if (items.length > 500) {
+          const warningRow = document.createElement('tr');
+          warningRow.innerHTML = `
+            <td colspan="4" style="text-align: center; padding: 10px; background: #fff3cd; color: #856404;">
+              <strong>Info:</strong> Menampilkan 500 item pertama dari ${items.length.toLocaleString()} item total<br>
+              <small>Urutan: ID ${items[0]?.id || 'N/A'} → ${items[items.length-1]?.id || 'N/A'} (terkecil → terbesar)</small>
+            </td>
+          `;
+          itemsBody.appendChild(warningRow);
+        }
+        
+        displayItems.forEach((item, index) => {
+          const row = document.createElement('tr');
+          
+          const barcodeBarang = item.barcode || '-';
+          const namaBarang = item.nama || 'N/A';
+          const qtyBarang = item.qty || 0;
+          const itemId = item.id || index;
+          
+          row.innerHTML = `
+            <td style="text-align: center;">
+              <input type="checkbox" class="item-checkbox" data-index="${index}" />
+            </td>
+            <td style="font-family: monospace; font-weight: bold;">
+              ${barcodeBarang}
+              <div style="font-size: 11px; color: #888;">ID: ${itemId}</div>
+            </td>
+            <td>
+              ${namaBarang}
+              ${qtyBarang ? `<div style="font-size: 11px; color: #888;">Stok: ${qtyBarang}</div>` : ''}
+            </td>
+            <td>
+              <input type="number" 
+                     class="item-qty" 
+                     data-index="${index}"
+                     min="0" 
+                     value="0" 
+                     style="width: 80px; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 3px;"
+                     placeholder="Qty" />
+            </td>
+          `;
+          
+          itemsBody.appendChild(row);
+        });
+      }
+      
+      updateSelectedCount();
+      modal.style.display = 'block';
+    }
+
+    function updateSelectedCount() {
+      const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+      const countDiv = document.getElementById('selectedCount');
+      
+      if (countDiv) {
+        if (checkboxes.length > 0) {
+          countDiv.innerHTML = `<strong>${checkboxes.length} item</strong> dipilih untuk disimpan`;
+        } else {
+          countDiv.innerHTML = 'Pilih item dan isi qty untuk menyimpan';
+        }
+      }
+    }
+
+    function selectAllItems() {
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+      
+      if (!selectAllCheckbox) return;
+      
+      const isChecked = selectAllCheckbox.checked;
+      itemCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+      });
+      
+      updateSelectedCount();
+    }
+
+    function saveQtyToDataScan() {
+      const locationName = document.getElementById('modalLocationName').textContent;
+      const user = document.getElementById("userInput").value || "Unknown";
+      
+      const rows = document.querySelectorAll('#locationItemsBody tr');
+      const selectedItems = [];
+      
+      rows.forEach((row, index) => {
+        const checkbox = row.querySelector('.item-checkbox');
+        const qtyInput = row.querySelector('.item-qty');
+        
+        if (checkbox && checkbox.checked) {
+          const qty = parseInt(qtyInput.value) || 0;
+          if (qty > 0) {
+            const cells = row.querySelectorAll('td');
+            
+            const barcodeCell = cells[1];
+            const namaCell = cells[2];
+            
+            // Ambil barcode tanpa ID
+            const barcode = barcodeCell.querySelector('div') ? 
+              barcodeCell.textContent.replace(barcodeCell.querySelector('div').textContent, '').trim() : 
+              barcodeCell.textContent.trim();
+            
+            let namaText = namaCell.textContent;
+            namaText = namaText.split('Stok:')[0].trim();
+            
+            selectedItems.push({
+              barcode: barcode,
+              nama: namaText,
+              qty: qty,
+              lokasi: locationName,
+              user: user
+            });
+          }
+        }
+      });
+      
+      if (selectedItems.length === 0) {
+        alert('Pilih minimal satu item dan isi qty yang valid.');
+        return;
+      }
+      
+      let count = 0;
+      selectedItems.forEach(item => {
+        const { barcode, nama, qty, lokasi, user } = item;
+        
+        if (barcode && barcode !== '-' && nama && nama !== 'N/A') {
+          const existingIndex = dataScan.findIndex(scan => 
+            scan.barcode === barcode && 
+            scan.lokasi === lokasi && 
+            scan.user === user
+          );
+          
+          if (existingIndex > -1) {
+            dataScan[existingIndex].qty += qty;
+          } else {
+            dataScan.push({
+              user: user,
+              lokasi: lokasi,
+              barcode: barcode,
+              nama: nama,
+              qty: qty
+            });
+          }
+          count++;
+        }
+      });
+      
+      saveDataToLocalStorage();
+      updateTable();
+      setFillingQtyStatus(false);
+      document.getElementById('qtyModal').style.display = 'none';
+      
+      alert(`✅ ${count} item berhasil ditambahkan ke data scan untuk lokasi ${locationName}.`);
+    }
+
+    // =============== FUNGSI UTILITY ===============
     function setupBeforeUnloadWarning() {
       window.addEventListener('beforeunload', function (e) {
         if (isFillingQty) {
-          // Tampilkan konfirmasi jika sedang mengisi Qty
           e.preventDefault();
           e.returnValue = 'Anda sedang mengisi Qty. Data yang belum disimpan akan hilang. Yakin ingin meninggalkan halaman?';
           return e.returnValue;
@@ -489,11 +1821,8 @@
       });
     }
 
-    // Fungsi untuk menandai sedang mengisi Qty
     function setFillingQtyStatus(filling) {
       isFillingQty = filling;
-      
-      // Update title untuk indikasi visual
       if (filling) {
         document.title = "*Isi Qty - " + document.title.replace("*Isi Qty - ", "");
       } else {
@@ -501,7 +1830,6 @@
       }
     }
 
-    // =============== FUNGSI TABEL ===============
     function updateTable() {
       const tbody = document.querySelector("#dataTable tbody");
       if (!tbody) return;
@@ -595,540 +1923,14 @@
       }
     }
 
-    // =============== FUNGSI SUPABASE ===============
-    function initSupabaseClient(url, key) {
-      try {
-        if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
-          throw new Error('URL Supabase tidak valid.');
-        }
-        
-        if (key.length < 10) {
-          throw new Error('API Key tidak valid');
-        }
-        
-        supabaseClient = window.supabase.createClient(url, key);
-        console.log("Supabase initialized successfully");
-        return true;
-      } catch (error) {
-        console.error("Error initializing Supabase:", error);
-        return false;
-      }
-    }
-
-    function showSupabaseConfig() {
-      document.getElementById('supabaseUrl').value = localStorage.getItem("supabaseUrl") || "";
-      document.getElementById('supabaseKey').value = localStorage.getItem("supabaseKey") || "";
-      document.getElementById('supabaseModal').style.display = 'block';
-    }
-
-    function saveSupabaseConfig() {
-      const url = document.getElementById('supabaseUrl').value.trim();
-      const key = document.getElementById('supabaseKey').value.trim();
-      
-      if (!url || !key) {
-        alert("URL dan API Key Supabase harus diisi.");
-        return;
-      }
-      
-      if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
-        alert("URL Supabase harus dalam format: https://your-project.supabase.co");
-        return;
-      }
-      
-      localStorage.setItem("supabaseUrl", url);
-      localStorage.setItem("supabaseKey", key);
-      
-      if (initSupabaseClient(url, key)) {
-        alert("✅ Konfigurasi Supabase berhasil disimpan.");
-        document.getElementById('supabaseModal').style.display = 'none';
-      }
-    }
-
-    // =============== FUNGSI AMBIL DATA PER LOKASI (DIPERBARUI DENGAN ORDER BY created_at) ===============
-    async function showLocationDataModal() {
-      if (!supabaseClient) {
-        alert("Silakan konfigurasi Supabase terlebih dahulu.");
-        showSupabaseConfig();
-        return;
-      }
-      
-      if (isFetchingData) {
-        alert("Sedang mengambil data, harap tunggu...");
-        return;
-      }
-      
-      document.getElementById('locationModal').style.display = 'block';
-      await loadAllDataFromSupabase();
-    }
-
-    async function loadAllDataFromSupabase() {
-      if (isFetchingData) return;
-      
-      try {
-        isFetchingData = true;
-        const locationList = document.getElementById('locationList');
-        const progressBarContainer = document.getElementById('progressBarContainer');
-        const progressBar = document.getElementById('progressBar');
-        const loadingStatus = document.getElementById('loadingStatus');
-        const loadingDetails = document.getElementById('loadingDetails');
-        
-        if (!locationList) return;
-        
-        locationList.innerHTML = '<div style="text-align: center; padding: 20px;">Memuat data dari Supabase...</div>';
-        progressBarContainer.style.display = 'block';
-        progressBar.style.width = '0%';
-        progressBar.textContent = '0%';
-        loadingStatus.style.display = 'block';
-        
-        console.log('Memulai pengambilan data dari Supabase...');
-        
-        loadingDetails.textContent = 'Menghitung total data...';
-        const { count, error: countError } = await supabaseClient
-          .from('stok_barang')
-          .select('*', { count: 'exact', head: true });
-        
-        if (countError) {
-          throw countError;
-        }
-        
-        const totalData = count || 0;
-        console.log(`Total data di Supabase: ${totalData}`);
-        loadingDetails.textContent = `Total data: ${totalData.toLocaleString()} item`;
-        
-        if (totalData === 0) {
-          locationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Tidak ada data ditemukan di Supabase.</div>';
-          progressBarContainer.style.display = 'none';
-          loadingStatus.style.display = 'none';
-          isFetchingData = false;
-          return;
-        }
-        
-        const pageSize = 1000;
-        const totalPages = Math.ceil(totalData / pageSize);
-        let allData = [];
-        
-        for (let page = 0; page < totalPages; page++) {
-          const from = page * pageSize;
-          const to = from + pageSize - 1;
-          
-          loadingDetails.textContent = `Mengambil data ${from + 1}-${Math.min(to + 1, totalData)} dari ${totalData}...`;
-          progressBar.style.width = `${((page + 1) / totalPages * 100).toFixed(0)}%`;
-          progressBar.textContent = `${((page + 1) / totalPages * 100).toFixed(0)}%`;
-          
-          console.log(`Mengambil halaman ${page + 1}/${totalPages}...`);
-          
-          // PERUBAHAN DI SINI: Menambahkan order by created_at
-          const { data, error } = await supabaseClient
-            .from('stok_barang')
-            .select('barcode, nama, lokasi, qty, created_at')
-            .range(from, to)
-            .order('created_at', { ascending: true }); // Urutkan berdasarkan created_at
-          
-          if (error) {
-            throw error;
-          }
-          
-          if (data && data.length > 0) {
-            allData = allData.concat(data);
-          }
-          
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
-        console.log(`Total data berhasil diambil: ${allData.length} baris`);
-        
-        if (allData.length === 0) {
-          locationList.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Tidak ada data ditemukan di Supabase.</div>';
-          progressBarContainer.style.display = 'none';
-          loadingStatus.style.display = 'none';
-          isFetchingData = false;
-          return;
-        }
-        
-        loadingDetails.textContent = 'Mengelompokkan data berdasarkan lokasi...';
-        progressBar.style.width = '100%';
-        progressBar.textContent = '100%';
-        
-        const groupedData = {};
-        allData.forEach(item => {
-          const location = item.lokasi || 'Tidak Ada Lokasi';
-          if (!groupedData[location]) {
-            groupedData[location] = [];
-          }
-          groupedData[location].push(item);
-        });
-        
-        console.log(`Jumlah lokasi: ${Object.keys(groupedData).length}`);
-        
-        locationList.innerHTML = '';
-        const locations = Object.keys(groupedData).sort();
-        
-        const allButton = document.createElement('button');
-        allButton.className = 'user-button';
-        allButton.dataset.location = 'Semua Lokasi';
-        allButton.innerHTML = `
-          📁 Semua Lokasi
-          <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
-            ${allData.length.toLocaleString()}
-          </span>
-        `;
-        allButton.onclick = (e) => {
-          selectLocationInModal('Semua Lokasi', allData, e.target);
-        };
-        locationList.appendChild(allButton);
-        
-        locations.forEach(location => {
-          if (groupedData[location].length > 0) {
-            const button = document.createElement('button');
-            button.className = 'user-button';
-            button.dataset.location = location;
-            button.innerHTML = `
-              📍 ${location} 
-              <span style="font-size: 11px; background: #666; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px;">
-                ${groupedData[location].length.toLocaleString()}
-              </span>
-            `;
-            button.onclick = (e) => {
-              selectLocationInModal(location, groupedData[location], e.target);
-            };
-            locationList.appendChild(button);
-          }
-        });
-        
-        const filterInput = document.getElementById('filterLocation');
-        if (filterInput) {
-          filterInput.oninput = function() {
-            const searchTerm = this.value.toLowerCase();
-            const buttons = locationList.querySelectorAll('.user-button');
-            buttons.forEach(button => {
-              const locationName = button.dataset.location.toLowerCase();
-              button.style.display = locationName.includes(searchTerm) ? 'block' : 'none';
-            });
-          };
-        }
-        
-        setTimeout(() => {
-          progressBarContainer.style.display = 'none';
-          loadingStatus.style.display = 'none';
-        }, 1000);
-        
-        const statsDiv = document.createElement('div');
-        statsDiv.style.marginTop = '10px';
-        statsDiv.style.padding = '10px';
-        statsDiv.style.background = '#e8f5e8';
-        statsDiv.style.borderRadius = '4px';
-        statsDiv.style.fontSize = '12px';
-        statsDiv.innerHTML = `
-          <strong>✅ Data berhasil dimuat!</strong><br>
-          • Total data: ${allData.length.toLocaleString()} item<br>
-          • Lokasi: ${locations.length} lokasi<br>
-          • Template: <strong>Barcode | Nama | Qty</strong><br>
-          • Urutan: <strong>created_at (paling lama → terbaru)</strong>
-        `;
-        locationList.parentNode.insertBefore(statsDiv, locationList.nextSibling);
-        
-      } catch (error) {
-        console.error('Error loading data:', error);
-        const locationList = document.getElementById('locationList');
-        if (locationList) {
-          locationList.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: #f44336;">
-              <h4>❌ Gagal memuat data dari Supabase</h4>
-              <p style="font-size: 12px;">${error.message}</p>
-            </div>
-          `;
-        }
-        
-        const progressBarContainer = document.getElementById('progressBarContainer');
-        const loadingStatus = document.getElementById('loadingStatus');
-        if (progressBarContainer) progressBarContainer.style.display = 'none';
-        if (loadingStatus) loadingStatus.style.display = 'none';
-      } finally {
-        isFetchingData = false;
-      }
-    }
-
-    function selectLocationInModal(location, items, target) {
-      const buttons = document.querySelectorAll('#locationList .user-button');
-      buttons.forEach(btn => btn.classList.remove('active'));
-      target.classList.add('active');
-      
-      const infoDiv = document.getElementById('locationDataInfo');
-      const infoContent = document.getElementById('selectedLocationInfo');
-      const countDiv = document.getElementById('locationItemCount');
-      const loadBtn = document.getElementById('loadLocationDataBtn');
-      
-      if (infoDiv && infoContent && countDiv && loadBtn) {
-        infoDiv.style.display = 'block';
-        infoContent.innerHTML = `<strong>📍 ${location}</strong> dipilih`;
-        countDiv.textContent = `${items.length.toLocaleString()} item ditemukan | Template: Barcode, Nama, Qty`;
-        loadBtn.style.display = 'block';
-        
-        loadBtn.dataset.location = location;
-        loadBtn.dataset.items = JSON.stringify(items);
-      }
-    }
-
-    function loadSelectedLocationData() {
-      const loadBtn = document.getElementById('loadLocationDataBtn');
-      if (!loadBtn || !loadBtn.dataset.location) {
-        alert('Pilih lokasi terlebih dahulu.');
-        return;
-      }
-      
-      const location = loadBtn.dataset.location;
-      const items = JSON.parse(loadBtn.dataset.items);
-      
-      document.getElementById('locationModal').style.display = 'none';
-      showQtyModal(location, items);
-    }
-
-    // =============== FUNGSI SHOW QTY MODAL (DIPERBARUI) ===============
-    function showQtyModal(location, items) {
-      const modal = document.getElementById('qtyModal');
-      const locationNameSpan = document.getElementById('modalLocationName');
-      const currentLocationInfo = document.getElementById('currentLocationInfo');
-      const itemsBody = document.getElementById('locationItemsBody');
-      
-      if (!modal || !locationNameSpan || !currentLocationInfo || !itemsBody) return;
-      
-      locationNameSpan.textContent = location;
-      currentLocationInfo.innerHTML = `
-        <div>
-          <strong>📍 ${location}</strong>
-          <div style="font-size: 12px; color: #666;">
-            ${items.length.toLocaleString()} item | Template: <strong>Barcode | Nama | Qty</strong><br>
-            <span style="color: #2196F3;">Urutan: berdasarkan created_at (lama → baru)</span>
-          </div>
-        </div>
-      `;
-      
-      itemsBody.innerHTML = '';
-      
-      // Tandai bahwa sedang mengisi Qty
-      setFillingQtyStatus(true);
-      
-      const displayItems = items.slice(0, 500);
-      
-      if (displayItems.length === 0) {
-        itemsBody.innerHTML = `
-          <tr>
-            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
-              Tidak ada item di lokasi ini
-            </td>
-          </tr>
-        `;
-      } else {
-        if (items.length > 500) {
-          const warningRow = document.createElement('tr');
-          warningRow.innerHTML = `
-            <td colspan="4" style="text-align: center; padding: 10px; background: #fff3cd; color: #856404; border: 0px;">
-              <strong>Info:</strong> Menampilkan 500 item pertama dari ${items.length.toLocaleString()} item total
-            </td>
-          `;
-          itemsBody.appendChild(warningRow);
-        }
-        
-        displayItems.forEach((item, index) => {
-          const row = document.createElement('tr');
-          row.style.border = '0px';
-          row.style.borderBottom = '1px solid #f0f0f0';
-          
-          // SESUAI TEMPLATE: Barcode, Nama, Qty
-          const barcodeBarang = item.barcode || item.kode || item.kode_barang || '-';
-          const namaBarang = item.nama || item.nama_barang || item.item_name || 'N/A';
-          const qtyBarang = item.qty || item.quantity || item.stock || 0;
-          
-          row.innerHTML = `
-            <td style="text-align: center; border: 0px;">
-              <input type="checkbox" class="item-checkbox" data-index="${index}" />
-            </td>
-            <td style="font-family: monospace; font-weight: bold; border: 0px;">
-              ${barcodeBarang}
-            </td>
-            <td style="border: 0px;">
-              ${namaBarang}
-              ${qtyBarang ? `<div style="font-size: 11px; color: #888;">Stok: ${qtyBarang}</div>` : ''}
-            </td>
-            <td style="border: 0px;">
-              <input type="number" 
-                     class="item-qty" 
-                     data-index="${index}"
-                     min="0" 
-                     value="0" 
-                     style="width: 80px; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 3px;"
-                     placeholder="Qty" />
-            </td>
-          `;
-          
-          itemsBody.appendChild(row);
-        });
-      }
-      
-      updateSelectedCount();
-      modal.style.display = 'block';
-    }
-
-    function updateSelectedCount() {
-      const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-      const countDiv = document.getElementById('selectedCount');
-      
-      if (countDiv) {
-        if (checkboxes.length > 0) {
-          countDiv.innerHTML = `<strong>${checkboxes.length} item</strong> dipilih untuk disimpan`;
-        } else {
-          countDiv.innerHTML = 'Pilih item dan isi qty untuk menyimpan';
-        }
-      }
-    }
-
-    function selectAllItems() {
-      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-      const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-      
-      if (!selectAllCheckbox) return;
-      
-      const isChecked = selectAllCheckbox.checked;
-      itemCheckboxes.forEach(checkbox => {
-        checkbox.checked = isChecked;
-      });
-      
-      updateSelectedCount();
-    }
-
-    function saveQtyToDataScan() {
-      const locationName = document.getElementById('modalLocationName').textContent;
-      const user = document.getElementById("userInput").value || "Unknown";
-      
-      const rows = document.querySelectorAll('#locationItemsBody tr');
-      const selectedItems = [];
-      
-      rows.forEach((row, index) => {
-        const checkbox = row.querySelector('.item-checkbox');
-        const qtyInput = row.querySelector('.item-qty');
-        
-        if (checkbox && checkbox.checked) {
-          const qty = parseInt(qtyInput.value) || 0;
-          if (qty > 0) {
-            const cells = row.querySelectorAll('td');
-            
-            const barcodeCell = cells[1];
-            const namaCell = cells[2];
-            
-            const barcode = barcodeCell.textContent.trim();
-            let namaText = namaCell.textContent;
-            namaText = namaText.split('Stok:')[0].trim();
-            
-            selectedItems.push({
-              barcode: barcode,
-              nama: namaText,
-              qty: qty,
-              lokasi: locationName,
-              user: user
-            });
-          }
-        }
-      });
-      
-      if (selectedItems.length === 0) {
-        alert('Pilih minimal satu item dan isi qty yang valid.');
-        return;
-      }
-      
-      let count = 0;
-      selectedItems.forEach(item => {
-        const { barcode, nama, qty, lokasi, user } = item;
-        
-        if (barcode && barcode !== '-' && nama && nama !== 'N/A') {
-          const existingIndex = dataScan.findIndex(scan => 
-            scan.barcode === barcode && 
-            scan.lokasi === lokasi && 
-            scan.user === user
-          );
-          
-          if (existingIndex > -1) {
-            dataScan[existingIndex].qty += qty;
-          } else {
-            dataScan.push({
-              user: user,
-              lokasi: lokasi,
-              barcode: barcode,
-              nama: nama,
-              qty: qty
-            });
-          }
-          count++;
-        }
-      });
-      
-      saveDataToLocalStorage();
-      updateTable();
-      
-      // Setelah menyimpan, tandai tidak sedang mengisi Qty lagi
-      setFillingQtyStatus(false);
-      
-      document.getElementById('qtyModal').style.display = 'none';
-      
-      alert(`✅ ${count} item berhasil ditambahkan ke data scan untuk lokasi ${locationName}.`);
-    }
-
-    // =============== FUNGSI LAINNYA ===============
-    function lockLokasi() {
-      const lokasiInput = document.getElementById("lokasiInput");
-      if (lokasiInput.value.trim() === "") {
-        alert("Harap isi nama lokasi terlebih dahulu!");
-        return;
-      }
-      lokasiInput.disabled = true;
-      lokasiTerkunci = true;
-      alert("✅ Lokasi berhasil dikunci!");
-    }
-
-    function ubahLokasi() {
-      const lokasiInput = document.getElementById("lokasiInput");
-      lokasiInput.disabled = false;
-      lokasiTerkunci = false;
-      lokasiInput.focus();
-    }
-
-    function lockUploadLokasi() {
-      const lokasiInput = document.getElementById("uploadLokasiInput");
-      if (lokasiInput.value.trim() === "") {
-        alert("Harap isi nama lokasi terlebih dahulu!");
-        return;
-      }
-      lokasiInput.disabled = true;
-      uploadLokasiTerkunci = true;
-      alert("✅ Lokasi berhasil dikunci!");
-    }
-
-    function ubahUploadLokasi() {
-      const lokasiInput = document.getElementById("uploadLokasiInput");
-      lokasiInput.disabled = false;
-      uploadLokasiTerkunci = false;
-      lokasiInput.focus();
-    }
-
-    function handleBarcodeInput() {
-      const barcodeInput = document.getElementById("barcodeInput");
-      const namaBarangInput = document.getElementById("namaBarangInput");
-      const barcode = barcodeInput.value.trim();
-      
-      if (barcode) {
-        if (dataBarang[barcode]) {
-          namaBarangInput.value = dataBarang[barcode];
-        } else {
-          namaBarangInput.value = "Barang tidak ditemukan";
-        }
-      }
-    }
-
-    function tambahData() {
+    // =============== FUNGSI UTAMA ===============
+    async function tambahData() {
       const user = document.getElementById("userInput").value || "Unknown";
       const lokasi = document.getElementById("lokasiInput").value;
       const barcode = document.getElementById("barcodeInput").value.trim();
       const nama = document.getElementById("namaBarangInput").value;
       const qty = parseInt(document.getElementById("qtyInput").value) || 0;
+      const newItemForm = document.getElementById("newItemForm");
       
       if (!lokasi) {
         alert("Harap isi nama lokasi terlebih dahulu!");
@@ -1140,7 +1942,12 @@
         return;
       }
       
-      if (!nama || nama === "Barang tidak ditemukan") {
+      if (newItemForm && newItemForm.classList.contains("show")) {
+        alert("Harap selesaikan proses penambahan barang baru terlebih dahulu!");
+        return;
+      }
+      
+      if (!nama || nama === "❌ Tidak ditemukan" || nama === "🔍 Mencari...") {
         alert("Barang tidak ditemukan dalam database!");
         return;
       }
@@ -1163,7 +1970,8 @@
           lokasi: lokasi,
           barcode: barcode,
           nama: nama,
-          qty: qty
+          qty: qty,
+          timestamp: new Date().toISOString()
         });
         alert(`✅ Data ${nama} berhasil ditambahkan!`);
       }
@@ -1177,110 +1985,6 @@
       updateTable();
     }
 
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-        
-        dataBarang = {};
-        
-        jsonData.forEach(row => {
-          if (row[0] && row[1]) {
-            dataBarang[row[0].toString()] = row[1].toString();
-          }
-        });
-        
-        alert(`✅ Data barang berhasil diupload! ${Object.keys(dataBarang).length} item tersedia.`);
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    function handleBulkFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      const user = document.getElementById("uploadUserInput").value || "Unknown";
-      const lokasi = document.getElementById("uploadLokasiInput").value;
-      
-      if (!lokasi) {
-        alert("Harap isi nama lokasi terlebih dahulu!");
-        event.target.value = "";
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-        
-        uploadedItems = [];
-        
-        jsonData.forEach((row, index) => {
-          if (index === 0) return;
-          
-          if (row[0] && row[1]) {
-            uploadedItems.push({
-              user: user,
-              lokasi: lokasi,
-              barcode: row[0].toString(),
-              nama: row[1].toString(),
-              qty: parseInt(row[2]) || 0
-            });
-          }
-        });
-        
-        updateUploadedItemsTable();
-        saveDataToLocalStorage();
-        alert(`✅ ${uploadedItems.length} item berhasil diupload!`);
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    function saveUploadedData() {
-      if (uploadedItems.length === 0) {
-        alert("Tidak ada data untuk disimpan!");
-        return;
-      }
-      
-      uploadedItems.forEach(item => {
-        const existingIndex = dataScan.findIndex(scan => 
-          scan.barcode === item.barcode && 
-          scan.lokasi === item.lokasi && 
-          scan.user === item.user
-        );
-        
-        if (existingIndex > -1) {
-          dataScan[existingIndex].qty += item.qty;
-        } else {
-          dataScan.push({...item});
-        }
-      });
-      
-      uploadedItems = [];
-      updateUploadedItemsTable();
-      saveDataToLocalStorage();
-      updateTable();
-      
-      alert(`✅ Data berhasil ditambahkan ke data scan!`);
-    }
-
-    function clearUploadedData() {
-      if (confirm("Yakin ingin menghapus semua data yang diupload?")) {
-        uploadedItems = [];
-        updateUploadedItemsTable();
-        saveDataToLocalStorage();
-      }
-    }
-
-    // =============== FUNGSI KAMERA ===============
     async function toggleScanner() {
       const scannerButton = document.getElementById("scannerButton");
       const cameraStatus = document.getElementById("cameraStatus");
@@ -1318,12 +2022,7 @@
             console.log("Scanned:", decodedText);
             document.getElementById("barcodeInput").value = decodedText;
             
-            const nama = dataBarang[decodedText];
-            document.getElementById("namaBarangInput").value = nama || "Barang tidak ditemukan";
-            
-            setTimeout(() => {
-              document.getElementById("qtyInput").focus();
-            }, 100);
+            handleBarcodeInput();
             
             scanner.stop().then(() => {
               cameraActive = false;
@@ -1461,8 +2160,9 @@
       }
     }
 
-    // =============== SETUP EVENT LISTENERS ===============
+    // =============== SETUP EVENT LISTENERS (DIPERBAIKI) ===============
     function setupEventListeners() {
+      // Tabs
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
           const tabId = this.dataset.tab;
@@ -1483,31 +2183,120 @@
         });
       });
       
-      document.getElementById('lockLokasiBtn')?.addEventListener('click', lockLokasi);
-      document.getElementById('ubahLokasiBtn')?.addEventListener('click', ubahLokasi);
-      document.getElementById('uploadFile')?.addEventListener('change', handleFileUpload);
-      document.getElementById('uploadFileBtn')?.addEventListener('click', () => {
-        document.getElementById('uploadFile').click();
+      // Scan Tab
+      document.getElementById('lockLokasiBtn')?.addEventListener('click', function() {
+        const lokasiInput = document.getElementById("lokasiInput");
+        if (lokasiInput.value.trim() === "") {
+          alert("Harap isi nama lokasi terlebih dahulu!");
+          return;
+        }
+        lokasiInput.disabled = true;
+        lokasiTerkunci = true;
+        alert("✅ Lokasi berhasil dikunci!");
       });
+      
+      document.getElementById('ubahLokasiBtn')?.addEventListener('click', function() {
+        const lokasiInput = document.getElementById("lokasiInput");
+        lokasiInput.disabled = false;
+        lokasiTerkunci = false;
+        lokasiInput.focus();
+      });
+      
       document.getElementById('barcodeInput')?.addEventListener('input', handleBarcodeInput);
+      
+      document.getElementById('refreshProdukBtn')?.addEventListener('click', async () => {
+        await loadProdukDataFromSupabase();
+      });
+      
+      // New item form
+      document.getElementById('saveNewItemQuickBtn')?.addEventListener('click', async () => {
+        const namaInput = document.getElementById('newItemNameInput');
+        const namaBarang = namaInput.value.trim();
+        
+        if (!namaBarang) {
+          alert("Harap masukkan nama barang!");
+          namaInput.focus();
+          return;
+        }
+        
+        if (!supabaseClient) {
+          alert("Supabase belum dikonfigurasi. Barang hanya disimpan sementara.");
+          produkData[currentScannedBarcode] = namaBarang;
+          dataBarang[currentScannedBarcode] = namaBarang;
+          document.getElementById("namaBarangInput").value = namaBarang;
+          hideNewItemForm();
+          updateProdukStatus(`✅ ${Object.keys(produkData).length} produk (termasuk sementara)`);
+          return;
+        }
+        
+        try {
+          const { error } = await supabaseClient
+            .from('produk')
+            .insert([{
+              barcode: currentScannedBarcode,
+              nama: namaBarang,
+              created_at: new Date().toISOString()
+            }]);
+          
+          if (error) {
+            console.error("Error menyimpan barang baru:", error);
+            alert(`❌ Gagal menyimpan: ${error.message}`);
+            return;
+          }
+          
+          produkData[currentScannedBarcode] = namaBarang;
+          dataBarang[currentScannedBarcode] = namaBarang;
+          
+          updateProdukStatus(`✅ ${Object.keys(produkData).length} produk (termasuk baru)`);
+          document.getElementById("namaBarangInput").value = namaBarang;
+          
+          try {
+            localStorage.setItem("produkData", JSON.stringify(produkData));
+          } catch (e) {
+            console.error("Error saving to localStorage:", e);
+          }
+          
+          alert(`✅ Barang baru berhasil disimpan ke database!`);
+          hideNewItemForm();
+          
+        } catch (error) {
+          console.error("Error:", error);
+          alert(`❌ Error: ${error.message}`);
+        }
+      });
+      
+      document.getElementById('useTempItemBtn')?.addEventListener('click', () => {
+        const namaInput = document.getElementById('newItemNameInput');
+        const namaBarang = namaInput.value.trim();
+        
+        if (!namaBarang) {
+          alert("Harap masukkan nama barang!");
+          namaInput.focus();
+          return;
+        }
+        
+        produkData[currentScannedBarcode] = namaBarang;
+        dataBarang[currentScannedBarcode] = namaBarang;
+        
+        document.getElementById("namaBarangInput").value = namaBarang;
+        updateProdukStatus(`✅ ${Object.keys(produkData).length} produk (termasuk sementara)`);
+        hideNewItemForm();
+        
+        alert(`📝 Barang "${namaBarang}" digunakan sementara.`);
+      });
+      
+      document.getElementById('cancelNewItemBtn2')?.addEventListener('click', hideNewItemForm);
+      
+      // Tombol utama
       document.getElementById('scannerButton')?.addEventListener('click', toggleScanner);
       document.getElementById('tambahDataBtn')?.addEventListener('click', tambahData);
-      
-      document.getElementById('lockUploadLokasiBtn')?.addEventListener('click', lockUploadLokasi);
-      document.getElementById('ubahUploadLokasiBtn')?.addEventListener('click', ubahUploadLokasi);
-      document.getElementById('bulkUploadFile')?.addEventListener('change', handleBulkFileUpload);
-      document.getElementById('bulkUploadBtn')?.addEventListener('click', () => {
-        document.getElementById('bulkUploadFile').click();
-      });
-      document.getElementById('saveUploadedDataBtn')?.addEventListener('click', saveUploadedData);
-      document.getElementById('clearUploadedDataBtn')?.addEventListener('click', clearUploadedData);
-      
       document.getElementById('exportDataBtn')?.addEventListener('click', exportToExcel);
       document.getElementById('showLocationDataBtn')?.addEventListener('click', showLocationDataModal);
       document.getElementById('saveToSupabaseBtn')?.addEventListener('click', saveToSupabase);
       document.getElementById('showSupabaseConfigBtn')?.addEventListener('click', showSupabaseConfig);
       document.getElementById('hapusSemuaDataBtn')?.addEventListener('click', hapusSemuaData);
       
+      // Modal buttons - PERBAIKAN: Tambahkan event listener yang hilang
       document.getElementById('saveSupabaseConfigBtn')?.addEventListener('click', saveSupabaseConfig);
       document.getElementById('cancelSupabaseConfigBtn')?.addEventListener('click', () => {
         document.getElementById('supabaseModal').style.display = 'none';
@@ -1519,10 +2308,10 @@
       });
       
       document.getElementById('closeQtyModalBtn')?.addEventListener('click', () => {
-        // Tandai tidak sedang mengisi Qty saat modal ditutup
         setFillingQtyStatus(false);
         document.getElementById('qtyModal').style.display = 'none';
       });
+      
       document.getElementById('selectAllBtn')?.addEventListener('click', function() {
         const selectAllCheckbox = document.getElementById('selectAllCheckbox');
         if (selectAllCheckbox) {
@@ -1530,15 +2319,11 @@
           selectAllItems();
         }
       });
+      
       document.getElementById('selectAllCheckbox')?.addEventListener('change', selectAllItems);
       document.getElementById('saveQtyBtn')?.addEventListener('click', saveQtyToDataScan);
       
-      document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('item-checkbox')) {
-          updateSelectedCount();
-        }
-      });
-      
+      // Keyboard shortcuts
       document.getElementById('barcodeInput')?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -1553,29 +2338,37 @@
         }
       });
       
+      document.getElementById('newItemNameInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('saveNewItemQuickBtn').click();
+        }
+      });
+      
+      // Global events
       window.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal')) {
-          // Jika modal Qty ditutup dengan klik di luar, tandai tidak sedang mengisi Qty
           if (e.target.id === 'qtyModal') {
             setFillingQtyStatus(false);
           }
           e.target.style.display = 'none';
         }
       });
+    }
+
+    // =============== FUNGSI TAMBAHAN UNTUK MODAL LOKASI ===============
+    function loadSelectedLocationData() {
+      const loadBtn = document.getElementById('loadLocationDataBtn');
+      if (!loadBtn || !loadBtn.dataset.location) {
+        alert('Pilih lokasi terlebih dahulu.');
+        return;
+      }
       
-      document.addEventListener('visibilitychange', function() {
-        if (document.hidden && scanner && cameraActive) {
-          scanner.stop().then(() => {
-            cameraActive = false;
-            scanner = null;
-            document.getElementById("scannerButton").textContent = "📷 Aktifkan Kamera";
-            document.getElementById("cameraStatus").textContent = "Kamera tidak aktif";
-            document.getElementById("cameraStatus").className = "camera-status inactive";
-            document.getElementById("reader").style.display = "none";
-            document.getElementById("reader").innerHTML = "";
-          }).catch(console.error);
-        }
-      });
+      const location = loadBtn.dataset.location;
+      const items = JSON.parse(loadBtn.dataset.items);
+      
+      document.getElementById('locationModal').style.display = 'none';
+      showQtyModal(location, items);
     }
 
     // =============== START APPLICATION ===============
